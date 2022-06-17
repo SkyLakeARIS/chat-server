@@ -10,21 +10,29 @@ namespace Core
 {
     public class Connector
     {
+        // 리스너와 유사하게
         private Func<Session> _sessionFactory;
-        public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory)
+        public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory, int count =1)
         {
-            var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            _sessionFactory = sessionFactory;
+            for (int i = 0; i < count; i++) // dummy mode
+            {
+                var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                _sessionFactory = sessionFactory;
 
-            var args = new SocketAsyncEventArgs();
+                var args = new SocketAsyncEventArgs();
 
-            args.Completed += OnConnectCompleted;
-            args.RemoteEndPoint = endPoint;
-            // 일종의 식별자
-            args.UserToken = socket;
+                args.Completed += OnConnectCompleted;
+                args.RemoteEndPoint = endPoint;
+                // 일종의 식별자
+                // 이렇게 하는것도 한가지 방법.
+                // 1. socket을 멤버 변수로 2. 매개변수로 넘기기 3. args의 UserToken이용
+                // 1번의 경우 한번만 하는것이 아니라 여러개의 소켓을 연결해주므로 3번을 사용한다고 함.
+                args.UserToken = socket;
 
-            // 비동기 루프 시작
-            RegisterConnect(args);
+                // 비동기 루프 시작
+                RegisterConnect(args);
+            }
+
         }
 
         private void RegisterConnect(SocketAsyncEventArgs args)
@@ -46,6 +54,7 @@ namespace Core
             if (args.SocketError == SocketError.Success)
             {
                 Session session = _sessionFactory.Invoke();
+                // 다시한번, 세션은 클라이언트에 대한 모든 정보를 가지고 있는 클래스
                 session.Start(args.ConnectSocket);
                 session.OnConnected(args.RemoteEndPoint);
                 // Register 를 다시 호출하지 않는 이유는

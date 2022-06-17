@@ -10,9 +10,7 @@ using Server.Network;
 
 namespace Server;
 
-/*--------------------
-         Server
- --------------------*/
+
 public class Packet
 {
     public ushort size;
@@ -76,7 +74,11 @@ public class GameSession : PacketSession
 
 public static class Program
 {
+		/*--------------------
+			   Server
+		--------------------*/
     private static Listener _Listener = new Listener();
+    public static Server Server = new Server();
 
     private static void Main(string[] args)
     {
@@ -115,7 +117,7 @@ public static class Program
 
         // 델리게이트에 추가하기 위해서 OnAcceptHandler()를 전달함.
         // 클라이언트가 접속하면 등록한 함수가 호출될 것임.
-        _Listener.Init(endPoint, () => { return new ChatSession(); });
+        _Listener.Init(endPoint, () => { return SessionManager.instance.Generate(); });
 
         Console.WriteLine("[server] Listening..");
 

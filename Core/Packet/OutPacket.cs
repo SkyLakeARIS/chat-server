@@ -11,8 +11,14 @@ public class OutPacket : AbstractPacket
         {
             throw new NullReferenceException("Array 가 Null이였습니다.");
         }
+
         // 왜 4?
         Position = 4;
+    }
+
+    public OutPacket(int type, int size = 4096) : this(SendBufferHelper.Open(size))
+    {
+        EncodeInt( type);
     }
 
     public void EncodeBool(bool val)
@@ -38,6 +44,7 @@ public class OutPacket : AbstractPacket
         Array.Copy(bytes, 0, Buffer.Array, Buffer.Offset + Position, bytes.Length);
         Position += 4;
     }
+
     public void EncodeDouble(double val)
     {
         var bytes = BitConverter.GetBytes(val);
@@ -45,14 +52,15 @@ public class OutPacket : AbstractPacket
         Array.Copy(bytes, 0, Buffer.Array, Buffer.Offset + Position, bytes.Length);
         Position += 8;
     }
+
     public void EncodeString(string val)
     {
-        var bytes = Encoding.UTF8.GetBytes(val); 
+        var bytes = Encoding.UTF8.GetBytes(val);
         // BitConverter.GetBytes(val);
         // 마땅한 방법이 없어서 앞에 문자열 길이 명시
         EncodeInt(bytes.Length);
         Array.Copy(bytes, 0, Buffer.Array, Buffer.Offset + Position, bytes.Length);
-        
+
         Position += bytes.Length;
     }
 

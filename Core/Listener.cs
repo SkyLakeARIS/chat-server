@@ -5,12 +5,14 @@ using System.Net.Sockets;
 namespace Core;
 
 /*--------------------
-    Listener
+    Listener 538 035 486 
  --------------------*/
 
 public class Listener
 {
     private Socket _listenSocket;
+
+    // 코어단에서는 어떤 세션이 어떻게 상속될지 모르기 때문에.
     private Func<Session> _sessionFactory;
 
     public void Init(IPEndPoint endPoint, Func<Session> sessionFactory)

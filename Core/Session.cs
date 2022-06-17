@@ -56,6 +56,7 @@ public abstract class Session
 {
     private Socket _socket;
     private int _disconnected = 0; // lock
+
     private SocketAsyncEventArgs _recvArgs = new SocketAsyncEventArgs();
     private SocketAsyncEventArgs _sendArgs = new SocketAsyncEventArgs();
     private Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
@@ -63,11 +64,22 @@ public abstract class Session
     private object _lock = new object(); // Send 작업에 사용할 lock
     private RecvBuffer _recvBuffer = new RecvBuffer(1024);
 
+
+    // core와 컨텐츠 서버와의 분리
+    // 어떤 작업에 대한 후처리(이 서버코어 사용자가 하고 싶은 행동) 인터페이스를 제공
     public abstract int OnReceived(ArraySegment<byte> buffer);
     public abstract void OnSend(int numOfBytes);
     public abstract void OnConnected(EndPoint endPoint);
     public abstract void OnDisconnected(EndPoint endPoint);
 
+    void Clear()
+    {
+        lock (_lock)
+        {
+            _sendQueue.Clear();
+            _pendingList.Clear();
+        }
+    }
 
     public void Start(Socket socket)
     {
@@ -100,6 +112,7 @@ public abstract class Session
         OnDisconnected(_socket.RemoteEndPoint);
         _socket.Shutdown(SocketShutdown.Both);
         _socket.Close();
+        Clear();
     }
 
     #region Net_Send
@@ -122,6 +135,11 @@ public abstract class Session
 
     private void RegisterSend()
     {
+        if (_disconnected == 1)
+        {
+            return;
+        }
+
         while (_sendQueue.Count > 0)
         {
             var buffer = _sendQueue.Dequeue();
@@ -134,12 +152,20 @@ public abstract class Session
         // _SendArgs.BufferList.Add(new ArraySegment<byte> (buffer,0,buffer.Length));  // 이렇게하면 잘 동작 안함.
         _sendArgs.BufferList = _pendingList;
 
-        var pending = _socket.SendAsync(_sendArgs);
-
-        if (!pending)
+        try
         {
-            OnSendCompleted(null, _sendArgs);
+            var pending = _socket.SendAsync(_sendArgs);
+
+            if (!pending)
+            {
+                OnSendCompleted(null, _sendArgs);
+            }
         }
+        catch (Exception e)
+        {
+            Console.WriteLine($" register send failed {e}" );
+        }
+
     }
 
     private void OnSendCompleted(object sender, SocketAsyncEventArgs args)
@@ -185,15 +211,29 @@ public abstract class Session
 
     private void RegisterRecv()
     {
+        if (_disconnected == 1) // 스레드 세이프 연결 끊으면 실행 x
+        {
+            return;
+        }
+
         _recvBuffer.Clear();
         ArraySegment<byte> segment = _recvBuffer.WriteSegment;
         _recvArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
-        var pending = _socket.ReceiveAsync(_recvArgs);
 
-        if (!pending)
+        try // 스레드 세이프 연결 끊으면 실행 x
         {
-            OnRecvCompleted(null, _recvArgs);
+            var pending = _socket.ReceiveAsync(_recvArgs);
+
+            if (!pending)
+            {
+                OnRecvCompleted(null, _recvArgs);
+            }
         }
+        catch(Exception e)
+        {
+            Console.WriteLine($"register recv failed {e}");
+        }
+ 
     }
 
     private void OnRecvCompleted(Object sender, SocketAsyncEventArgs args)
