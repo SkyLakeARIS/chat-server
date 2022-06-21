@@ -3,6 +3,8 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace Core;
 
+
+// send버퍼를 래핑.
 public class SendBufferHelper
 {
     // ThreadLocal을 사용. (스레드 경쟁상태를 막기위해)
@@ -37,9 +39,11 @@ public class SendBufferHelper
     }
 
 }
+
+// 서버가 가지고 있는 버퍼, 서버에서 클라로 데이터를 전송할 때.
 public class SendBuffer
 {
-    // send queue에 넣어져있는 데이터가 있을 수 있으므로 recv같이 재활용은 힘듦
+    // 다른 세션에 보내려고 send queue에 넣어져있는 데이터가 있을 수 있으므로 recv같이 재활용은 힘듦
     private byte[] _buffer;
     private int _usedSize = 0;
 
@@ -50,11 +54,10 @@ public class SendBuffer
         _buffer = new byte[chunkSize];
     }
     
+    // 예약 사이즈로 실제 사용하기 전에 넉넉히 받아가는 느낌의 용도.
+    // 실제 정확한 크기를 예측하기 힘든 패킷이 있기 때문.. (문자열, 리스트 등)
     public ArraySegment<byte> Open(int reserveSize)
     {
-        // 사용하기 위해서 버퍼를 예약함
-        // 실제 사용량과는 별개
-        // 따라서 _usedSize는 변동이 없다.
         if (reserveSize > FreeSize)
         {
             return null;
@@ -63,6 +66,7 @@ public class SendBuffer
         return new ArraySegment<byte>(_buffer, _usedSize, reserveSize);
     }
 
+    // 실제 사용한 사이즈를 알려주면 그만큼 커서를 옮기고 사용한 부분을 반환한다.
     public ArraySegment<byte> Close(int usedSize)
     {
         // 실제로 사용한만큼만 잘라서 반환?

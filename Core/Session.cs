@@ -19,7 +19,7 @@ public abstract class PacketSession : Session
         while (true)
         {
             // 패킷 길이 + 패킷타입 헤더 체크
-            if (buffer.Count < 8)
+            if (buffer.Count < 2)
             {
                 break;
             }
@@ -27,7 +27,7 @@ public abstract class PacketSession : Session
             // 패킷이 완전체로 도착했는지 확인
             // 헤더를 볼 수 있으니, 헤더 정보를 봐서 패킷의 크기를 읽어오는 부분.
             // 아마 이 함수는 UINT16만큼만 읽는 듯(size타입이 ushort 2bytes)
-            var dataSize = BitConverter.ToInt32(buffer.Array, buffer.Offset);
+            var dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
             if (buffer.Count < dataSize) // 그래서 버퍼에 온 데이터와 패킷의 총 크기를 비교함.
             {
                 break;
@@ -58,9 +58,9 @@ public abstract class Session
     private int _disconnected = 0; // lock
 
     private SocketAsyncEventArgs _recvArgs = new SocketAsyncEventArgs();
-    private SocketAsyncEventArgs _sendArgs = new SocketAsyncEventArgs();
+    private SocketAsyncEventArgs _sendArgs = new SocketAsyncEventArgs();// 대기중인 메세지 목록
     private Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
-    List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>(); // 대기중인 메세지 목록
+    List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>(); // 한방에 보내기 위한 리스트. sendQueue의 내용을 한꺼번에 가져가 전송.
     private object _lock = new object(); // Send 작업에 사용할 lock
     private RecvBuffer _recvBuffer = new RecvBuffer(1024);
 
@@ -83,6 +83,7 @@ public abstract class Session
 
     public void Start(Socket socket)
     {
+        // 접속한 클라이언트 소켓.
         _socket = socket;
 
         // listener와 동일하게 비동기로 처리
@@ -211,16 +212,19 @@ public abstract class Session
 
     private void RegisterRecv()
     {
-        if (_disconnected == 1) // 스레드 세이프 연결 끊으면 실행 x
+        if (_disconnected == 1) //, 스레드 세이프 연결 끊으면 실행 x
         {
             return;
         }
 
+        // 데이터를 받기전에 여유 공간을 확보.
         _recvBuffer.Clear();
+        // recv버퍼에서 현재 쓸 수 있는 공간을 받아서 그 recvArgs의 버퍼로 세팅해 준다.
+        // 기존에 _recvArgs.SetBuffer(new byte[1024], 0, 1024); 코드를 삭제했기 때문.
         ArraySegment<byte> segment = _recvBuffer.WriteSegment;
-        _recvArgs.SetBuffer(segment.Array, segment.Offset, segment.Count);
+        _recvArgs.SetBuffer(segment.Array, segment.Offset, segment.Count); // buffer, writeCursor, 
 
-        try // 스레드 세이프 연결 끊으면 실행 x
+        try // 스레드 세이프, 연결 끊으면 실행 x
         {
             var pending = _socket.ReceiveAsync(_recvArgs);
 
@@ -244,7 +248,7 @@ public abstract class Session
         {
             try
             {
-                // 보낼 메세지를 버퍼에 입력(write)-> 전송(read)-> 버퍼 read 커서 이동 
+                // 보낼 메세지를 버퍼에 입력(write)-> 컨텐츠에서 처리 -> 처리한 만큼 버퍼 read 커서 이동 
                 // write 커서 이동
                 if (_recvBuffer.OnWrite(args.BytesTransferred) == false)
                 {
@@ -252,7 +256,7 @@ public abstract class Session
                     return;
                 }
 
-                // 컨텐츠 쪽으로 데이터를 전송하여 처리한 데이터 수를 받아옴
+                // 컨텐츠 쪽에서 데이터를 처리하고 처리한 값을 받아옴.
                 int processLen = OnReceived(_recvBuffer.ReadSegment);
                 // 비정상적인 값을 처리
                 if (processLen < 0 || processLen > _recvBuffer.DataSize)

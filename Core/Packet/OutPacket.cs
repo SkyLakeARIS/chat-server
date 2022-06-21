@@ -3,6 +3,15 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace Core.Packet;
 
+
+/*
+ *
+ *      직접 encode, decode 하지 말고, 강의 대로 패킷 클래스에서 encode, decode하도록 변경.
+ *      이 방식이 더 맞는 듯.
+ *      inPacket도 마찬가지.
+ *      
+ */
+
 public class OutPacket : AbstractPacket
 {
     public OutPacket(ArraySegment<byte> segment) : base(segment)
@@ -18,6 +27,7 @@ public class OutPacket : AbstractPacket
 
     public OutPacket(int type, int size = 4096) : this(SendBufferHelper.Open(size))
     {
+        // 패킷의 헤더
         EncodeInt( type);
     }
 

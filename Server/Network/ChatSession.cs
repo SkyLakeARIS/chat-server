@@ -1,10 +1,9 @@
 ﻿using System.Net;
 using Core;
 using Core.Data;
-using Core.Packet;
-using Server.Network.Handler;
 
 namespace Server.Network;
+
 
 public class ChatSession : PacketSession
 {
@@ -12,7 +11,7 @@ public class ChatSession : PacketSession
      세션이 알고 있어야 할 유저 정보들
    username(id), nickname, accountType 
  
-    0 유저 1 관리자 2 매니져 3 4
+    0 유저 1 호스트 2 관리자
   --------------------*/
     public string UserName { get; set; } = "qwer";
     public string NickName { get; set; }
@@ -27,17 +26,7 @@ public class ChatSession : PacketSession
 
     public override void OnReceivePacket(ArraySegment<byte> buffer)
     {
-        var inPacket = new InPacket(buffer);
-        var id = (ClientPacket) inPacket.DecodeInt();
-
-        switch (id)
-        {
-            case ClientPacket.Chat:
-                ChatHandler.OnUserChat(this, inPacket);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        PacketManager.Instance.OnRecvPacket(this, buffer);
     }
 
     public override void OnConnected(EndPoint endPoint)

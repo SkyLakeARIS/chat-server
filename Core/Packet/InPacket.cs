@@ -2,6 +2,15 @@
 
 namespace Core.Packet;
 
+
+
+/*
+ *
+ *      직접 encode, decode 하지 말고, 강의 대로 패킷 클래스에서 encode, decode하도록 변경.
+ *      이 방식이 더 맞는 듯.
+ *      outPacket도 마찬가지.
+ *      
+ */
 public class InPacket : AbstractPacket
 {
     public InPacket(ArraySegment<byte> segment) : base(segment)
@@ -13,7 +22,6 @@ public class InPacket : AbstractPacket
     {
         var val = BitConverter.ToBoolean(Buffer.Array, Buffer.Offset + Position);
         Position += 1;
-
         return val;
     }
     public int DecodeInt()

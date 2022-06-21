@@ -1,13 +1,15 @@
 ﻿using System.Net;
-using Client.Net.Handler;
 using Core;
-using Core.Packet;
 
-namespace Client.Net
+namespace Client.Network
 {
-    public class ChatSession : Session
+    public class ChatSession : PacketSession
     {
         public static ChatSession Instance { get; private set; }
+
+        // 임시로 커서 위치 분리 변수
+        public int x { get;  set; }
+        public int y { get;  set; }
 
         public ChatSession()
         {
@@ -19,21 +21,10 @@ namespace Client.Net
             Console.WriteLine($"Connected {endPoint}");
         }
 
-        public override int OnReceived(ArraySegment<byte> buffer)
+        public override void OnReceivePacket(ArraySegment<byte> buffer)
         {
-            var inPacket = new InPacket(buffer);
-            var id = (ServerPacket)inPacket.DecodeInt();
+            PacketManager.Instance.OnRecvPacket(this, buffer);
 
-            switch (id)
-            {
-                case ServerPacket.Chat:
-                    ChatHandler.OnUserChat(this, inPacket);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-
-            return buffer.Count;
         }
 
         public override void OnSend(int numOfBytes)

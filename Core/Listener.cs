@@ -19,10 +19,13 @@ public class Listener
     {
         _listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
+        // main에서 람다로 세션을 생성하는 함수를 만들어 콜백으로 지정함.
         _sessionFactory += sessionFactory;
 
         _listenSocket.Bind(endPoint);
 
+        // 거의 동시에 접속 가능한 수
+        // QnA에 따르면 RegisterAccept를 한번하더라도 동시에 들어온게 있으면 그거도 처리되는 듯.
         _listenSocket.Listen(100);
 
         var args = new SocketAsyncEventArgs();

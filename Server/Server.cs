@@ -24,7 +24,7 @@ public class Server
         {
             _sessions.Add(session);
         }
-
+        
     }
 
     public void Leave(ChatSession session)

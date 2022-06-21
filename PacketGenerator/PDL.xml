@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<PDL>
+  <packet name="C_SendChat">
+  <string name="Message"/>
+  </packet>
+  <packet name="C_RequestSignIn">
+  <string name="ID"/>
+  <string name="Password"/>
+  </packet>
+  <packet name="C_RequestSignUp">
+  <string name ="ID"/>
+  <string name ="Password"/>
+  <string name ="UserName"/>
+  </packet>
+  <packet name ="C_RequestSignOut">
+  <long name ="UserID"/>
+  </packet>
+  <packet name ="C_RequestEnterServer">
+  <long name = "UserID"/>
+  <string name ="ServerName"/>
+  </packet>
+  <packet name ="C_RequestLeaveServer">
+  <long name ="UserID"/>
+  <string name ="ServerName"/>
+  </packet>
+  <packet name ="C_RequestCreateServer">
+  <long name ="UserID"/>
+  <string name ="ServerName"/>
+  </packet>
+  <packet name ="C_RequestDeleteServer">
+  <long name ="UserID"/>
+  <string name ="ServerName"/>
+  </packet>
+  <packet name ="C_RequestJoinServer">
+  <long name ="UserID"/>
+  <string name ="ServerName"/>
+  </packet>
+  <packet name ="C_RequestCommand">
+  <long name ="UserID"/>
+  <string name = "Command"/>
+  </packet>
+  <packet name ="C_RequestServerList">
+  <long name ="UserID"/>
+  </packet>
+  <packet name ="S_SuccessSignIn">
+  <long name ="UserID"/>
+  <string name ="UserName"/>
+  </packet>
+  <packet name ="S_FailSignIn">
+  <string name="Reason"/>
+  </packet>
+  <packet name ="S_SuccessSignUp">
+  <string name ="Reason"/>
+  </packet> 
+  <packet name ="S_FailSignUp">
+  <string name ="Reason"/>
+  </packet>
+  <packet name ="S_SucessSignOut">
+  <string name ="Message"/>
+  </packet>
+  <packet name ="S_FailSignOut">
+  <string name ="Reason"/>
+  </packet>
+  <packet name ="S_SuccessCommand">
+  <string name ="TargetUserName"/>
+  <string name ="Message"/>
+  </packet>
+  <packet name ="S_FailCommand">
+  <string name ="Reason"/>
+  </packet>
+  <packet name ="S_SendChat">
+  <string name ="Message"/>
+  </packet>
+  <packet name ="S_ExitServer">
+  <string name ="Message"/>
+  </packet>
+  <packet name ="S_JoinServer">
+  <string name ="Message"/>
+  </packet>
+</PDL>
+  <!--포멧: 보낸 주체(C, S)_패킷 타입-->
+    <!--클라이언트에서 메세지를(닉네임:내용) 조립하여 보냄.-->
+    <!--클라이언트에서 받은 내용을 그대로 보냄.-->
+  <!--<packet name ="S_SendServerList">
+    server list struct
+  </packet> -->
+<!--
+간단하게 
+로그인 , 회원가입, 회원탈퇴.
+서버 입장, 서버 만들기, 서버 삭제, 서버 가입
+채팅, 밴(추방)
+
+클라: 
+처음: 로그인 화면(로그인, 회원가입)
+로그인: 서버 목록, 서버 만들기, 로그아웃
+서버 목록: 서버 참여, 뒤로가기
+서버 화면: 채팅, 뒤로가기
+
+
+client -> server
+chat
+reqlogin
+reqRegister
+joinserver
+banuser
+reqmakeserver
+reqdeleteserver
+
+server->client
+recvchat
+failchat
+recvlogin
+faillogin
+recvregister
+failregister
+recvjoinserver
+failjoinserver
+recvinviteuser
+failmakeserver
+failmakeserver
+
+-->

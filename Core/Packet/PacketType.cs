@@ -1,5 +1,6 @@
 ﻿namespace Core.Packet;
 
+
 public enum ClientPacket
 {
     Chat
