@@ -14,7 +14,7 @@ namespace Core
         private Func<Session> _sessionFactory;
         public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory, int count =1)
         {
-            for (int i = 0; i < count; i++) // dummy mode
+            for (int i = 0; i < count; i++) // dummy mode 
             {
                 var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
                 _sessionFactory = sessionFactory;

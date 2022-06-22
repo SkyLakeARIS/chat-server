@@ -69,6 +69,7 @@
   <string name ="Reason"/>
   </packet>
   <packet name ="S_SendChat">
+  <string name ="NickName"/>
   <string name ="Message"/>
   </packet>
   <packet name ="S_ExitServer">

@@ -9,6 +9,9 @@ namespace Core;
 
 public abstract class PacketSession : Session
 {
+    // 서버에서 패킷을 모아 보낼 때 클라에서 몇개를 수신하는지 체크.
+    int _packetCount = 0;
+
     // sealed란?
     // 이 클래스를 다시 상속받아서 이 함수를 오버라이드하려고 하면
     // 하지 못하도록 오류를 발생시켜줌(컴파일오류)
@@ -37,14 +40,18 @@ public abstract class PacketSession : Session
             // 패킷 한 덩어리 부분을 넘겨주는 부분
             // arratsegment는 구조체라 스택에 생성(new가 동적아님)
             OnReceivePacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
-
+            _packetCount++;
             proccessLen += dataSize;
 
             // [size(2)][packetid(2)][...]<이부분으로 이동>[size(2)][packetid(2)][...] ...
             // 처리한 패킷을 제외한 남은 패킷들만 빼서 넣어줌.
             buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
         }
-
+        if(_packetCount > 1)
+        {
+            Console.WriteLine($"packet recv : {_packetCount}");
+        }
+        _packetCount = 0;
         return proccessLen;
     }
 
@@ -62,7 +69,7 @@ public abstract class Session
     private Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
     List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>(); // 한방에 보내기 위한 리스트. sendQueue의 내용을 한꺼번에 가져가 전송.
     private object _lock = new object(); // Send 작업에 사용할 lock
-    private RecvBuffer _recvBuffer = new RecvBuffer(1024);
+    private RecvBuffer _recvBuffer = new RecvBuffer(65535);
 
 
     // core와 컨텐츠 서버와의 분리
@@ -110,6 +117,7 @@ public abstract class Session
             return;
         }
 
+        // 멀티스레드에서 예외처리가 더 필요함.
         OnDisconnected(_socket.RemoteEndPoint);
         _socket.Shutdown(SocketShutdown.Both);
         _socket.Close();
@@ -118,6 +126,33 @@ public abstract class Session
 
     #region Net_Send
 
+    // 패킷 모아보내기를 위한 array List
+    public void Send(List<ArraySegment<byte>> sendBufferList)
+    {
+        // 빈 리스트가 들어오면 차단. OnSendCompleted에서 예외처리를(전송바이트가 0) 하기 때문에
+        // 클라 접속이 차단되는 것을 막기 위함.
+        if (sendBufferList.Count == 0)
+        {
+            return;
+        }
+
+        // 멀티스레드 환경에서 안정적으로 돌기 위해서 lock
+        lock (_lock)
+        {
+            // 일단 메세지 큐에 메세지를 넣음.
+            foreach(ArraySegment<byte> segment in sendBufferList)
+            {
+                _sendQueue.Enqueue(segment);
+            }
+
+            if (_pendingList.Count == 0)
+            {
+                RegisterSend();
+            }
+        }
+    }
+
+    // 패킷을 모아보내지 않고 그냥 byte array를 전송
     public void Send(ArraySegment<byte> sendBuffer)
     {
         //_Socket.Send(sendBuffer);
@@ -126,6 +161,8 @@ public abstract class Session
         lock (_lock)
         {
             // 일단 메세지 큐에 메세지를 넣음.
+            // 이는 멀티스레드 환경에 의해서 패킷 순서가 꼬이거나, 
+            // 중복해서 보내지거나 하는 문제를 방지하기 위해서 
             _sendQueue.Enqueue(sendBuffer);
             if (_pendingList.Count == 0)
             {

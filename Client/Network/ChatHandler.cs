@@ -57,9 +57,13 @@ public static class ChatHandler
     {
         S_SendChat packet = arg2 as S_SendChat;
         ChatSession session = arg1 as ChatSession;
-        Console.SetCursorPosition(session.x, session.y);
-        session.y++;
-        Console.WriteLine(packet.Message);
+
+        //if(packet.NickName == "1")
+        {
+
+            //string message = $"[{packet.NickName}] | {packet.Message}";
+            //Console.WriteLine(message);
+        }
     }
 
     internal static void S_ExitServerHandler(PacketSession arg1, IPacket arg2)

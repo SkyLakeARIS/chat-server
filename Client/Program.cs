@@ -1,8 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Net;
+using System.Net.Sockets;
+using System.Text;
+using Client;
 using Client.Network;
 using Core;
+using Core.Packet;
 
 
 internal static class Program
@@ -24,36 +28,37 @@ internal static class Program
         var endPoint = new IPEndPoint(ip, 9999);
 
         Connector connector = new Connector();
-        connector.Connect(endPoint, () => new ChatSession(), 1);
+        connector.Connect(endPoint, ()=> { return SessionManager.Instance.Generate(); }, 500);
 
 
-        // 임시로 커서 위치 분리
-        Console.WriteLine("닉네임 설정: ");
-        var nickname = Console.ReadLine();
-        Console.Clear();
-        int x, y;
-        (x, y) = Console.GetCursorPosition();
-        Tuple<int, int> chatPOS = new Tuple<int, int>(nickname.Length+3, 20);
-        Console.SetCursorPosition(0, chatPOS.Item2);
-        Console.WriteLine($"{nickname} | ");
 
-        ChatSession.Instance.x = x;
-        ChatSession.Instance.y = y;
 
-        while (true)
-        {
-            Console.SetCursorPosition(chatPOS.Item1, chatPOS.Item2);
+        /*
             var message = Console.ReadLine();
-            Console.SetCursorPosition(chatPOS.Item1, chatPOS.Item2);
-            Console.WriteLine("                                          ");
 
             if (!string.IsNullOrEmpty(message) && ChatSession.Instance != null)
             {
-                string sendMessage = $"{nickname}: {message}";
-
-                C_SendChat packet = new C_SendChat() {Message= sendMessage};
+                C_SendChat packet = new C_SendChat() {Message= message};
                 ChatSession.Instance.Send(packet.Write());
             }
+       
+         */
+        while (true)
+        {
+            // dummy mode
+            try
+            {
+                SessionManager.Instance.DummyChatForeach();
+
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine($"dummy fail send : {e.ToString}");
+            }
+
+            // 250인 이유는 초당 4번을 보내도록 하기 위해서.
+            // 예로 이동패킷 같은 경우는 초에 4번 보내도록 되어있기도 하므로 따라함.
+            Thread.Sleep(250);
         }
     }
 }

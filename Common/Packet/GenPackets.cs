@@ -883,6 +883,7 @@ class S_FailCommand : IPacket
 
 class S_SendChat : IPacket
 {
+	public string NickName;
 	public string Message;
 
 	public ushort Protocol { get { return (ushort)PacketID.S_SendChat; } }
@@ -894,6 +895,10 @@ class S_SendChat : IPacket
 		ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
 		count += sizeof(ushort);
 		count += sizeof(ushort);
+		ushort NickNameLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+		count += sizeof(ushort);
+		this.NickName = Encoding.Unicode.GetString(s.Slice(count, NickNameLen));
+		count += NickNameLen;
 		ushort MessageLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
 		count += sizeof(ushort);
 		this.Message = Encoding.Unicode.GetString(s.Slice(count, MessageLen));
@@ -911,6 +916,10 @@ class S_SendChat : IPacket
 		count += sizeof(ushort);
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_SendChat);
 		count += sizeof(ushort);
+		ushort NickNameLen = (ushort)Encoding.Unicode.GetBytes(this.NickName, 0, this.NickName.Length, segment.Array, segment.Offset + count + sizeof(ushort));
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), NickNameLen);
+		count += sizeof(ushort);
+		count += NickNameLen;
 		ushort MessageLen = (ushort)Encoding.Unicode.GetBytes(this.Message, 0, this.Message.Length, segment.Array, segment.Offset + count + sizeof(ushort));
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), MessageLen);
 		count += sizeof(ushort);

@@ -15,7 +15,7 @@ public class Listener
     // 코어단에서는 어떤 세션이 어떻게 상속될지 모르기 때문에.
     private Func<Session> _sessionFactory;
 
-    public void Init(IPEndPoint endPoint, Func<Session> sessionFactory)
+    public void Init(IPEndPoint endPoint, Func<Session> sessionFactory, int register = 10, int backlog = 500)
     {
         _listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
@@ -26,16 +26,21 @@ public class Listener
 
         // 거의 동시에 접속 가능한 수
         // QnA에 따르면 RegisterAccept를 한번하더라도 동시에 들어온게 있으면 그거도 처리되는 듯.
-        _listenSocket.Listen(100);
 
-        var args = new SocketAsyncEventArgs();
-        // 델리게이트- 메서드 추가
-        // RegisterAccept()에서 타이밍이 맞지 않았을때 접속시도가 들어오면
-        // args에 등록한 메서드를 델리게이트가 호출해 줌
-        args.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted);
+        _listenSocket.Listen(backlog);
+ 
+        // 멀티스레드 환경에 대응하는 하나의 방법, 문지기 수를 늘린 셈.
+        for(int i = 0; i < register; i++)
+        {
+            var args = new SocketAsyncEventArgs();
+            // 델리게이트- 메서드 추가
+            // RegisterAccept()에서 타이밍이 맞지 않았을때 접속시도가 들어오면
+            // args에 등록한 메서드를 델리게이트가 호출해 줌
+            args.Completed += new EventHandler<SocketAsyncEventArgs>(OnAcceptCompleted);
 
-        // 최초 한번은 등록 시도
-        RegisterAccept(args);
+            // 최초 한번은 등록 시도
+            RegisterAccept(args);
+        }
     }
 
     private void RegisterAccept(SocketAsyncEventArgs args)
