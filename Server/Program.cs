@@ -33,27 +33,45 @@ public static class Program
     {
         // 패킷 매니저 초기화.
         // 패킷들의 딕셔너리 초기화 및 델리게이트 연결.
-        PacketManager.Instance.Register();
+       // PacketManager.Instance.Register();
 
-        var instance = DatabaseManager.Instance;
-        var collection = instance.GetCollection<AccountEntity>("accounts");
-        // var account = new AccountEntity()
-        // {
-        //     Id = ObjectId.GenerateNewId(),
-        //     UserName = "test",
-        //     Password = "test",
-        //     Email = "test@test.com",
-        //     NickName = "TEST",
-        //     AccountType = 0,
-        //     RegisterDate = DateTime.Now
-        // };
-        // collection.InsertOne(account);
+        // 세팅은 되어 있으니 내일(06.24) 원격으로 db 켜보고 아래 명령어 대로 적용 해보기.
+        // 그리고 db 테이블 설계하기
+        // 패킷 핸들러에서 처리하는 방법은 종욱이 프로젝트 참고.
+        //DatabaseManager instance = DatabaseManager.Instance;
+        //IMongoCollection<AccountEntity> collection = instance.GetCollection<AccountEntity>("account");
+        //Console.WriteLine("ID 입력: ");
+        //string id = Console.ReadLine();
+        //Console.WriteLine("pw 입력: ");
+        //string pw = Console.ReadLine();
+        //Console.WriteLine("nickname 입력: ");
+        //string nickname = Console.ReadLine();
 
-        // var account = collection.Find(x => x.UserName.Contains("t")).ToList();
-        //
-        // var newAccount = account[0] with {NickName = "tttt"};
-        // var filter = Builders<AccountEntity>.Filter.Eq(x => x.Id, newAccount.Id);
-        // collection.ReplaceOne(filter, newAccount);
+        ////var instance = DatabaseManager.Instance;
+        ////var collection = instance.GetCollection<AccountEntity>("accounts");
+        //AccountEntity account = new AccountEntity()
+        //{
+        //    Id = ObjectId.GenerateNewId(),
+        //    ID = id,
+        //    password = pw,
+        //    nickName = nickname,
+        //    accountType = EAccountType.User,
+        //};
+        //collection.InsertOne(account);
+        //IFindFluent<AccountEntity, AccountEntity> find = collection.Find(x => x.ID.Contains(""));
+        //var list = find.ToList();
+        
+        //foreach(AccountEntity user in list)
+        //{
+        //    Console.WriteLine($"uid: {{{user.Id}}}, id : {user.ID}, nickname : {user.nickName}, type : {user.accountType}");
+        //}
+        //Thread.Sleep(10000);
+        //IFindFluent<AccountEntity, AccountEntity> account = collection.Find(){ "ID" : id};
+        
+        //IFindFluent<AccountEntity, Acc account = collection.Find(x => x.UserName.Contains("t")).ToList();
+        //var newAccount = account[0] with { nickName = "tttt" };
+        //var filter = Builders<AccountEntity>.Filter.Eq(x => x.Id, newAccount.Id);
+        //collection.ReplaceOne(filter, newAccount);
 
         var host = Dns.GetHostName();
         // 도메인을 통해서 아이피를 가져와 주는 역할

@@ -20,7 +20,11 @@ class PacketManager
 
 	Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>> _onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>>();
 	Dictionary<ushort, Action<PacketSession, IPacket>> _handler = new Dictionary<ushort, Action<PacketSession, IPacket>>();
-		
+
+	PacketManager()
+	{
+		Register();
+	}
 	public void Register()
 	{
 		_onRecv.Add((ushort)PacketID.C_SendChat, MakePacket<C_SendChat>);

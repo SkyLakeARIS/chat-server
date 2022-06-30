@@ -9,8 +9,9 @@ namespace Core;
 
 public abstract class PacketSession : Session
 {
+    // study log code
     // 서버에서 패킷을 모아 보낼 때 클라에서 몇개를 수신하는지 체크.
-    int _packetCount = 0;
+    //int _packetCount = 0;
 
     // sealed란?
     // 이 클래스를 다시 상속받아서 이 함수를 오버라이드하려고 하면
@@ -40,18 +41,23 @@ public abstract class PacketSession : Session
             // 패킷 한 덩어리 부분을 넘겨주는 부분
             // arratsegment는 구조체라 스택에 생성(new가 동적아님)
             OnReceivePacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
-            _packetCount++;
+
+            // study log code
+            //_packetCount++;
+
             proccessLen += dataSize;
 
             // [size(2)][packetid(2)][...]<이부분으로 이동>[size(2)][packetid(2)][...] ...
             // 처리한 패킷을 제외한 남은 패킷들만 빼서 넣어줌.
             buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
         }
-        if(_packetCount > 1)
-        {
-            Console.WriteLine($"packet recv : {_packetCount}");
-        }
-        _packetCount = 0;
+
+        // study log code
+        //if(_packetCount > 1)
+        //{
+        //    Console.WriteLine($"packet recv : {_packetCount}");
+        //}
+        //_packetCount = 0;
         return proccessLen;
     }
 
