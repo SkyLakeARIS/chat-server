@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using Core;
 using Core.Packet;
 
@@ -20,7 +21,6 @@ namespace Client.Network
         public override void OnReceivePacket(ArraySegment<byte> buffer)
         {
             PacketManager.Instance.OnRecvPacket(this, buffer);
-
         }
 
         public override void OnSend(int numOfBytes)
