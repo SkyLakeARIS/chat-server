@@ -20,7 +20,7 @@ public class ChatSession : PacketSession
     public string? NickName { get; set; }
     public AccountPermissions Permissions { get; set; }
 
-    public Server chatServer = new Server();
+    public Server chatServer = null;
 
     public int SessionId { get; set; }
 
@@ -40,10 +40,10 @@ public class ChatSession : PacketSession
 
         // 임시로 채팅 서버에 강제로 입장.
         NickName = SessionId.ToString();
-        Server server = chatServer;
+        //Server server = chatServer;
         // server.Push(() => server.Enter(this));
         Program.Server.Push(() => Program.Server.Enter(this));
-
+        chatServer = Program.Server;
         //Program.Server.Enter(this);
 
     }

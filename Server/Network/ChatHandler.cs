@@ -59,9 +59,9 @@ public static class ChatHandler
     {
 	    C_RequestSignIn packet = arg2 as C_RequestSignIn;
 	    ChatSession session = arg1 as ChatSession;
-	    List<AccountEntity> find;
+	    List<AccountEntity> find = null;
 
-        // SignIn 패킷 개선사항
+	    // SignIn 패킷 개선사항
         // 계정 정보를 UID, ID, PW, accountType, nickname 로 수정
 
         // 패킷 정보를 간단하게 검사합니다.
@@ -89,7 +89,8 @@ public static class ChatHandler
             throw;
 	    }
 
-	    Console.WriteLine($"id:{find[0].ID}, nickname:{find[0].nickName}");
+	    Console.WriteLine($"LOG - {session.NickName}({session.UserID}) was Sign In.");
+
 
         // 로그인 실패시 클라에게 결과를 알립니다.
         if (find.Count <= 0)
@@ -109,7 +110,17 @@ public static class ChatHandler
         successSignInPacket.UserID = session.UserID;
         successSignInPacket.UserName = session.NickName;
         session.Send(successSignInPacket.Write());
+
+        // 서버에 접속한 유저의 닉네임을 현재 접속중인 클라이언트들에게 전부
+        // 브로드캐스트.
+        // 이는 현재 구조가 메인채팅 서버 하나로 통일해서 구현 중이기 때문에 이곳에서 처리.
+        S_UserSignIn userSignInPacket = new S_UserSignIn();
+        userSignInPacket.UserName = session.NickName;
         
+        // SendChat과 마찬가지로 server를 따로 빼서 사용합니다.
+        Server server = session.chatServer;
+        server.Push(() => {server.Broadcast(session, userSignInPacket.Write()); });
+
     }
 
     internal static void C_RequestSignUpHandler(PacketSession arg1, IPacket arg2)
@@ -176,11 +187,43 @@ public static class ChatHandler
         S_SuccessSignUp successSignUpPacket = new S_SuccessSignUp();
         successSignUpPacket.Reason = "회원 가입이 완료되었습니다.";
         session.Send(successSignUpPacket.Write());
+        
+        Console.WriteLine($"LOG - ID: {packet.ID}({packet.UserName}) was Sign Up.");
+
     }
 
     internal static void C_RequestSignOutHandler(PacketSession arg1, IPacket arg2)
     {
-        throw new NotImplementedException();
+        ChatSession session = arg1 as ChatSession;
+        C_RequestSignOut packet = arg2 as C_RequestSignOut;
+
+
+        // session이 올바른 정보를 가지고 있는지 체크합니다.
+
+        // to do
+
+        // session이 유효한지 체크 후 로그아웃 처리합니다.
+        ChatSession foundSession = SessionManager.instance.Find(session.SessionId);
+
+
+        S_UserSignOut userSignOutPacket = new S_UserSignOut();
+        userSignOutPacket.UserName = session.NickName;
+
+        Server server = session.chatServer;
+        server.Push(() =>
+        {
+            server.Broadcast(session, userSignOutPacket.Write());
+        });
+
+        S_SucessSignOut successPacket = new S_SucessSignOut();
+        successPacket.Message = "로그아웃 되었습니다.";
+        session.Send(successPacket.Write());
+
+        Console.WriteLine($"LOG - {session.NickName}({session.UserID}) was Sign Out.");
+
+        // session의 정보도 초기화 할 것인지 고민 중
+
+        Program.Server.Leave(session);
     }
 
     internal static void C_RequestEnterServerHandler(PacketSession arg1, IPacket arg2)

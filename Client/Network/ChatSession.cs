@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using Core;
+using Core.Data;
 using Core.Packet;
 
 namespace Client.Network
@@ -8,6 +9,11 @@ namespace Client.Network
     public class ChatSession : PacketSession
     {
         public static ChatSession Instance { get; private set; }
+        public string _NickName;
+        public string _UserID;
+        public long _UID; // 추후 사용 
+        // accountType은 추후에 추가
+
         public ChatSession()
         {
             Instance = this;
