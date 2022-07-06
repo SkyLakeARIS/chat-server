@@ -63,5 +63,6 @@ namespace Client
 
 	        this.DialogResult = true;
 		}
+
     }
 }

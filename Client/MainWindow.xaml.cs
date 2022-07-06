@@ -24,23 +24,10 @@ namespace Client
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		public Connector connector;
-		public void ConnectServer()
-		{
-			var host = Dns.GetHostName();
-			var ipHost = Dns.GetHostEntry(host);
-			var ip = ipHost.AddressList[0];
-			// 목적지
-			var endPoint = new IPEndPoint(ip, 9999);
-
-			connector = new Connector();
-			connector.Connect(endPoint, () => { return SessionManager.Instance.Generate(); });
-		}
 
 		public MainWindow()
 		{
 			InitializeComponent();
-			ConnectServer();
 			//ChatSession.Instance.x = x;
 			//ChatSession.Instance.y = y;
 

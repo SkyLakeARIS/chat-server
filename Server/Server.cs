@@ -48,6 +48,11 @@ public class Server : IJobQueue
 
     }
 
+    public void Broadcast(ChatSession session, ArraySegment<byte> segment)
+    {
+        _pendingList.Add(segment);
+    }
+
     public void Flush()
     {
         foreach (ChatSession s in _sessions)

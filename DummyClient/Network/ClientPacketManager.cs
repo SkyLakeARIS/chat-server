@@ -1,6 +1,6 @@
 using Core;
 using System;
-using DummyClient.Network;
+using Client.Network;
 using System.Collections.Generic;
 
 class PacketManager
@@ -21,12 +21,21 @@ class PacketManager
 	Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>> _onRecv = new Dictionary<ushort, Action<PacketSession, ArraySegment<byte>>>();
 	Dictionary<ushort, Action<PacketSession, IPacket>> _handler = new Dictionary<ushort, Action<PacketSession, IPacket>>();
 		
+	PacketManager()
+	{
+		Register();
+	}
+
 	public void Register()
 	{
 		_onRecv.Add((ushort)PacketID.S_SuccessSignIn, MakePacket<S_SuccessSignIn>);
 		_handler.Add((ushort)PacketID.S_SuccessSignIn, ChatHandler.S_SuccessSignInHandler);
 		_onRecv.Add((ushort)PacketID.S_FailSignIn, MakePacket<S_FailSignIn>);
 		_handler.Add((ushort)PacketID.S_FailSignIn, ChatHandler.S_FailSignInHandler);
+		_onRecv.Add((ushort)PacketID.S_UserSignIn, MakePacket<S_UserSignIn>);
+		_handler.Add((ushort)PacketID.S_UserSignIn, ChatHandler.S_UserSignInHandler);
+		_onRecv.Add((ushort)PacketID.S_UserSignOut, MakePacket<S_UserSignOut>);
+		_handler.Add((ushort)PacketID.S_UserSignOut, ChatHandler.S_UserSignOutHandler);
 		_onRecv.Add((ushort)PacketID.S_SuccessSignUp, MakePacket<S_SuccessSignUp>);
 		_handler.Add((ushort)PacketID.S_SuccessSignUp, ChatHandler.S_SuccessSignUpHandler);
 		_onRecv.Add((ushort)PacketID.S_FailSignUp, MakePacket<S_FailSignUp>);
@@ -58,16 +67,25 @@ class PacketManager
 		count += 2;
 
 		Action<PacketSession, ArraySegment<byte>> action = null;
+		//// dictionary에 있는 MakePacket 함수를 호출.
 		if (_onRecv.TryGetValue(id, out action))
+		{
 			action.Invoke(session, buffer);
+		}
 	}
 
 	void MakePacket<T>(PacketSession session, ArraySegment<byte> buffer) where T : IPacket, new()
 	{
+		//// 클라에서 보낸 패킷 타입에 맞게 받아서
+		//// 역직렬화 시킨 후에 패킷 타입에 맞는 함수를 콜백함.
+		//// 애초에 콜백을 하려면 여기에서 패킷을 역직렬화 할 수 밖에 없음.
 		T pkt = new T();
 		pkt.Read(buffer);
 		Action<PacketSession, IPacket> action = null;
 		if (_handler.TryGetValue(pkt.Protocol, out action))
+		{
+			// 핸들러 함수 호출.
 			action.Invoke(session, pkt);
+		}
 	}
 }

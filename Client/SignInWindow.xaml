@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Client"
         mc:Ignorable="d"
-        Title="Sign In" Height="160" Width="260">
+        Title="Sign In" Height="160" Width="260" ResizeMode="NoResize">
     <Grid>
         <TextBlock x:Name="ID" HorizontalAlignment="Left" Margin="37,23,0,0" TextWrapping="Wrap" Text="ID" VerticalAlignment="Top" RenderTransformOrigin="0.482,0.711" Width="23" Height="21"/>
         <TextBlock x:Name="PW" HorizontalAlignment="Left" Margin="37,58,0,0" TextWrapping="Wrap" Text="PW" VerticalAlignment="Top" RenderTransformOrigin="0.482,0.711" Width="23" Height="21"/>
