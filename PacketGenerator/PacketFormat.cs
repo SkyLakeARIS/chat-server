@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace PacketGenerator
+﻿namespace PacketGenerator
 {
-	class PacketFormat
-	{
-		// PacketManager.cs
+    class PacketFormat
+    {
+        // PacketManager.cs
 
 
-		// {0} 패킷 등록
-		public static string managerFormat =
+        // {0} 패킷 등록
+        public static string managerFormat =
 @"using Core;
 using System;
 using {0}.Network;
@@ -37,9 +31,9 @@ class PacketManager
 	Dictionary<ushort, Action<PacketSession, IPacket>> _handler = new Dictionary<ushort, Action<PacketSession, IPacket>>();
 		
 	PacketManager()
-	{
+	{{
 		Register();
-	}
+	}}
 
 	public void Register()
 	{{
@@ -56,34 +50,43 @@ class PacketManager
 		count += 2;
 
 		Action<PacketSession, ArraySegment<byte>> action = null;
+		//// dictionary에 있는 MakePacket 함수를 호출.
 		if (_onRecv.TryGetValue(id, out action))
+		{{
 			action.Invoke(session, buffer);
+		}}
 	}}
 
 	void MakePacket<T>(PacketSession session, ArraySegment<byte> buffer) where T : IPacket, new()
 	{{
+		//// 클라에서 보낸 패킷 타입에 맞게 받아서
+		//// 역직렬화 시킨 후에 패킷 타입에 맞는 함수를 콜백함.
+		//// 애초에 콜백을 하려면 여기에서 패킷을 역직렬화 할 수 밖에 없음.
 		T pkt = new T();
 		pkt.Read(buffer);
 		Action<PacketSession, IPacket> action = null;
 		if (_handler.TryGetValue(pkt.Protocol, out action))
+		{{
+			// 핸들러 함수 호출.
 			action.Invoke(session, pkt);
+		}}
 	}}
 }}";
 
-		// {0} 패킷 이름
-		public static string managerRegisterFormat =
+        // {0} 패킷 이름
+        public static string managerRegisterFormat =
 @"		_onRecv.Add((ushort)PacketID.{0}, MakePacket<{0}>);
 		_handler.Add((ushort)PacketID.{0}, ChatHandler.{0}Handler);";
 
 
 
-		// GenPacket.cs
+        // GenPacket.cs
 
 
 
-		// {0} 패킷 이름/번호 목록
-		// {1} 패킷 목록
-		public static string fileFormat =
+        // {0} 패킷 이름/번호 목록
+        // {1} 패킷 목록
+        public static string fileFormat =
 @"using System;
 using System.Collections.Generic;
 using System.Text;
@@ -104,22 +107,22 @@ interface IPacket
 
 {1}
 ";
-		// fileFormat- PacketID {0} 의 열거형 코드
-		// {0} 패킷 이름
-		// {1} 패킷 번호
-		public static string packetEnumFormat =
+        // fileFormat- PacketID {0} 의 열거형 코드
+        // {0} 패킷 이름
+        // {1} 패킷 번호
+        public static string packetEnumFormat =
 @"{0} = {1},";
 
 
-		// 패킷 클래스 - 일반 변수
+        // 패킷 클래스 - 일반 변수
 
 
-		// fileFormat- PacketID {1} 의 열거형 코드
-		// {0} 패킷 이름
-		// {1} 멤버 변수들
-		// {2} 멤버 변수 Read
-		// {3} 멤버 변수 Write
-		public static string packetFormat =
+        // fileFormat- PacketID {1} 의 열거형 코드
+        // {0} 패킷 이름
+        // {1} 멤버 변수들
+        // {2} 멤버 변수 Read
+        // {3} 멤버 변수 Write
+        public static string packetFormat =
 @"
 class {0} : IPacket
 {{
@@ -156,19 +159,19 @@ class {0} : IPacket
 	}}
 }}
 ";
-		// packetFormat의 {1}에 멤버 변수
-		// {0} 변수 형식
-		// {1} 변수 이름
-		public static string memberFormat =
+        // packetFormat의 {1}에 멤버 변수
+        // {0} 변수 형식
+        // {1} 변수 이름
+        public static string memberFormat =
 @"public {0} {1};";
 
 
-		// {0} 리스트 이름 [대문자]
-		// {1} 리스트 이름 [소문자]
-		// {2} 멤버 변수들
-		// {3} 멤버 변수 Read
-		// {4} 멤버 변수 Write
-		public static string memberListFormat =
+        // {0} 리스트 이름 [대문자]
+        // {1} 리스트 이름 [소문자]
+        // {2} 멤버 변수들
+        // {3} 멤버 변수 Read
+        // {4} 멤버 변수 Write
+        public static string memberListFormat =
 @"public class {0}
 {{
 	{2}
@@ -187,33 +190,33 @@ class {0} : IPacket
 }}
 public List<{0}> {1}s = new List<{0}>();";
 
-		// 일반 타입 변수의 write - packetFormat의 {2}, memberListFormat의 {3}
-		// {0} 변수 이름
-		// {1} To~ 변수 형식
-		// {2} 변수 형식
-		public static string readFormat =
+        // 일반 타입 변수의 write - packetFormat의 {2}, memberListFormat의 {3}
+        // {0} 변수 이름
+        // {1} To~ 변수 형식
+        // {2} 변수 형식
+        public static string readFormat =
 @"this.{0} = BitConverter.{1}(s.Slice(count, s.Length - count));
 count += sizeof({2});";
 
-		// byte 타입 변수의 write - packetFormat의 {2}, memberListFormat의 {3}
-		// {0} 변수 이름
-		// {1} 변수 형식
-		public static string readByteFormat =
+        // byte 타입 변수의 write - packetFormat의 {2}, memberListFormat의 {3}
+        // {0} 변수 이름
+        // {1} 변수 형식
+        public static string readByteFormat =
 @"this.{0} = ({1})segment.Array[segment.Offset + count];
 count += sizeof({1});";
 
-		// string 타입 변수의 write - packetFormat의 {2}, memberListFormat의 {3}
-		// {0} 변수 이름
-		public static string readStringFormat =
+        // string 타입 변수의 write - packetFormat의 {2}, memberListFormat의 {3}
+        // {0} 변수 이름
+        public static string readStringFormat =
 @"ushort {0}Len = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
 count += sizeof(ushort);
 this.{0} = Encoding.Unicode.GetString(s.Slice(count, {0}Len));
 count += {0}Len;";
 
-		// List 타입 변수의 write - packetFormat의 {2}, memberListFormat의 {3}
-		// {0} 리스트 이름 [대문자]
-		// {1} 리스트 이름 [소문자]
-		public static string readListFormat =
+        // List 타입 변수의 write - packetFormat의 {2}, memberListFormat의 {3}
+        // {0} 리스트 이름 [대문자]
+        // {1} 리스트 이름 [소문자]
+        public static string readListFormat =
 @"this.{1}s.Clear();
 ushort {1}Len = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
 count += sizeof(ushort);
@@ -224,36 +227,36 @@ for (int i = 0; i < {1}Len; i++)
 	{1}s.Add({1});
 }}";
 
-		// 일반 타입 변수의 write - packetFormat의 {3}, memberListFormat의 {4}
-		// {0} 변수 이름
-		// {1} 변수 형식
-		public static string writeFormat =
+        // 일반 타입 변수의 write - packetFormat의 {3}, memberListFormat의 {4}
+        // {0} 변수 이름
+        // {1} 변수 형식
+        public static string writeFormat =
 @"success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), this.{0});
 count += sizeof({1});";
 
-		// byte 타입 변수의 write - packetFormat의 {3}, memberListFormat의 {4}
-		// {0} 변수 이름
-		// {1} 변수 형식
-		public static string writeByteFormat =
+        // byte 타입 변수의 write - packetFormat의 {3}, memberListFormat의 {4}
+        // {0} 변수 이름
+        // {1} 변수 형식
+        public static string writeByteFormat =
 @"segment.Array[segment.Offset + count] = (byte)this.{0};
 count += sizeof({1});";
 
-		// string 타입 변수의 write - packetFormat의 {3}, memberListFormat의 {4}
-		// {0} 변수 이름
-		public static string writeStringFormat =
+        // string 타입 변수의 write - packetFormat의 {3}, memberListFormat의 {4}
+        // {0} 변수 이름
+        public static string writeStringFormat =
 @"ushort {0}Len = (ushort)Encoding.Unicode.GetBytes(this.{0}, 0, this.{0}.Length, segment.Array, segment.Offset + count + sizeof(ushort));
 success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), {0}Len);
 count += sizeof(ushort);
 count += {0}Len;";
 
-		// List 타입 변수의 write - packetFormat의 {3}, memberListFormat의 {4}는 불확실
-		// {0} 리스트 이름 [대문자]
-		// {1} 리스트 이름 [소문자]
-		public static string writeListFormat =
+        // List 타입 변수의 write - packetFormat의 {3}, memberListFormat의 {4}는 불확실
+        // {0} 리스트 이름 [대문자]
+        // {1} 리스트 이름 [소문자]
+        public static string writeListFormat =
 @"success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)this.{1}s.Count);
 count += sizeof(ushort);
 foreach ({0} {1} in this.{1}s)
 	success &= {1}.Write(s, ref count);";
 
-	}
+    }
 }

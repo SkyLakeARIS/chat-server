@@ -49,9 +49,15 @@
   <packet name ="S_FailSignIn">
   <string name="Reason"/>
   </packet>
+  <packet name ="S_UserSignIn">
+  <string name ="UserName"/>
+  </packet>
+  <packet name ="S_UserSignOut">
+  <string name ="UserName"/>
+  </packet>
   <packet name ="S_SuccessSignUp">
   <string name ="Reason"/>
-  </packet> 
+  </packet>
   <packet name ="S_FailSignUp">
   <string name ="Reason"/>
   </packet>
