@@ -4,7 +4,7 @@ namespace Server.Database
 {
     public interface IMongoEntity
     {
-        ObjectId Id { get; set; }
+        ObjectId entityId { get; set; }
     }
 }
 

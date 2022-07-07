@@ -19,19 +19,21 @@ public enum PacketID
 	C_RequestServerList = 11,
 	S_SuccessSignIn = 12,
 	S_FailSignIn = 13,
-	S_SuccessSignUp = 14,
-	S_FailSignUp = 15,
-	S_SucessSignOut = 16,
-	S_FailSignOut = 17,
-	S_SuccessCommand = 18,
-	S_FailCommand = 19,
-	S_SendChat = 20,
-	S_ExitServer = 21,
-	S_JoinServer = 22,
+	S_UserSignIn = 14,
+	S_UserSignOut = 15,
+	S_SuccessSignUp = 16,
+	S_FailSignUp = 17,
+	S_SucessSignOut = 18,
+	S_FailSignOut = 19,
+	S_SuccessCommand = 20,
+	S_FailCommand = 21,
+	S_SendChat = 22,
+	S_ExitServer = 23,
+	S_JoinServer = 24,
 	
 }
 
-interface IPacket
+public interface IPacket
 {
 	ushort Protocol { get; }
 	void Read(ArraySegment<byte> segment);
@@ -619,6 +621,88 @@ class S_FailSignIn : IPacket
 		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), ReasonLen);
 		count += sizeof(ushort);
 		count += ReasonLen;
+		success &= BitConverter.TryWriteBytes(s, count);
+		if (success == false)
+			return null;
+		return SendBufferHelper.Close(count);
+	}
+}
+
+class S_UserSignIn : IPacket
+{
+	public string UserName;
+
+	public ushort Protocol { get { return (ushort)PacketID.S_UserSignIn; } }
+
+	public void Read(ArraySegment<byte> segment)
+	{
+		ushort count = 0;
+
+		ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
+		count += sizeof(ushort);
+		count += sizeof(ushort);
+		ushort UserNameLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+		count += sizeof(ushort);
+		this.UserName = Encoding.Unicode.GetString(s.Slice(count, UserNameLen));
+		count += UserNameLen;
+	}
+
+	public ArraySegment<byte> Write()
+	{
+		ArraySegment<byte> segment = SendBufferHelper.Open(4096);
+		ushort count = 0;
+		bool success = true;
+
+		Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
+
+		count += sizeof(ushort);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_UserSignIn);
+		count += sizeof(ushort);
+		ushort UserNameLen = (ushort)Encoding.Unicode.GetBytes(this.UserName, 0, this.UserName.Length, segment.Array, segment.Offset + count + sizeof(ushort));
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), UserNameLen);
+		count += sizeof(ushort);
+		count += UserNameLen;
+		success &= BitConverter.TryWriteBytes(s, count);
+		if (success == false)
+			return null;
+		return SendBufferHelper.Close(count);
+	}
+}
+
+class S_UserSignOut : IPacket
+{
+	public string UserName;
+
+	public ushort Protocol { get { return (ushort)PacketID.S_UserSignOut; } }
+
+	public void Read(ArraySegment<byte> segment)
+	{
+		ushort count = 0;
+
+		ReadOnlySpan<byte> s = new ReadOnlySpan<byte>(segment.Array, segment.Offset, segment.Count);
+		count += sizeof(ushort);
+		count += sizeof(ushort);
+		ushort UserNameLen = BitConverter.ToUInt16(s.Slice(count, s.Length - count));
+		count += sizeof(ushort);
+		this.UserName = Encoding.Unicode.GetString(s.Slice(count, UserNameLen));
+		count += UserNameLen;
+	}
+
+	public ArraySegment<byte> Write()
+	{
+		ArraySegment<byte> segment = SendBufferHelper.Open(4096);
+		ushort count = 0;
+		bool success = true;
+
+		Span<byte> s = new Span<byte>(segment.Array, segment.Offset, segment.Count);
+
+		count += sizeof(ushort);
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)PacketID.S_UserSignOut);
+		count += sizeof(ushort);
+		ushort UserNameLen = (ushort)Encoding.Unicode.GetBytes(this.UserName, 0, this.UserName.Length, segment.Array, segment.Offset + count + sizeof(ushort));
+		success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), UserNameLen);
+		count += sizeof(ushort);
+		count += UserNameLen;
 		success &= BitConverter.TryWriteBytes(s, count);
 		if (success == false)
 			return null;

@@ -1,0 +1,23 @@
+﻿<Window x:Class="Client.SignUpWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Client"
+        mc:Ignorable="d"
+        Title="Sign Up" Height="400" Width="300" ResizeMode="NoResize">
+    <Grid>
+        <TextBlock x:Name="IDBlock" HorizontalAlignment="Left" Margin="10,45,0,0" TextWrapping="Wrap" Text="ID" VerticalAlignment="Top"/>
+        <TextBox x:Name="IDInputBox" HorizontalAlignment="Left" Margin="79,45,0,0" TextWrapping="Wrap" Text="input id" VerticalAlignment="Top" Width="120"/>
+
+        <TextBlock x:Name="PWBlock" HorizontalAlignment="Left" Margin="10,89,0,0" TextWrapping="Wrap" Text="PW" VerticalAlignment="Top"/>
+        <PasswordBox x:Name="PWInputBox" HorizontalAlignment="Left" Margin="79,89,0,0" VerticalAlignment="Top" Width="120"/>
+
+        <TextBlock x:Name="NickNameBlock" HorizontalAlignment="Left" Margin="10,127,0,0" TextWrapping="Wrap" Text="NickName" VerticalAlignment="Top"/>
+        <TextBox x:Name="NickNameInputBox" HorizontalAlignment="Left" Margin="79,127,0,0" TextWrapping="Wrap" Text="input nickname" VerticalAlignment="Top" Width="120"/>
+
+        <Button x:Name="SummitButton" Content="summit" HorizontalAlignment="Left" Margin="111,315,0,0" VerticalAlignment="Top" Height="26" Width="56" Click="SummitButton_OnClick" RenderTransformOrigin="0.668,-2.712"/>
+        <TextBlock x:Name="StateBox" HorizontalAlignment="Left" Margin="79,288,0,0" TextWrapping="Wrap" Foreground="Red" Text="" VerticalAlignment="Top" Width="120" Height="22"/>
+
+    </Grid>
+</Window>

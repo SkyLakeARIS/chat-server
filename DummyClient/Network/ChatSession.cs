@@ -1,23 +1,21 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using Core;
-using Core.Data;
 using Core.Packet;
 
-namespace Client.Network
+namespace DummyClient.Network
 {
     public class ChatSession : PacketSession
     {
         public static ChatSession Instance { get; private set; }
-        public string _NickName;
-        public string _UserID;
-        public long _UID; // 추후 사용 
-        // accountType은 추후에 추가
-
         public ChatSession()
         {
             Instance = this;
         }
+        // 임시로 커서 위치 분리 변수
+        public int x { get;  set; }
+        public int y { get;  set; }
+
+
 
         public override void OnConnected(EndPoint endPoint)
         {
@@ -27,6 +25,7 @@ namespace Client.Network
         public override void OnReceivePacket(ArraySegment<byte> buffer)
         {
             PacketManager.Instance.OnRecvPacket(this, buffer);
+
         }
 
         public override void OnSend(int numOfBytes)

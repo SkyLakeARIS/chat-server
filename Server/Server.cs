@@ -36,7 +36,7 @@ public class Server : IJobQueue
         // 이런 방식은 바로바로 브로드캐스트를 하지 않고 조금 모았다가 한번에 보내는 방식. (잡큐와 같이 매우 중요한 개념 중 하나.)
 
         S_SendChat respondPacket = new S_SendChat();
-        respondPacket.NickName = session.SessionId.ToString();
+        respondPacket.NickName = session.NickName;
         respondPacket.Message = message;
         ArraySegment<byte> segment = respondPacket.Write();
   
@@ -48,6 +48,11 @@ public class Server : IJobQueue
 
     }
 
+    public void Broadcast(ChatSession session, ArraySegment<byte> segment)
+    {
+        _pendingList.Add(segment);
+    }
+
     public void Flush()
     {
         foreach (ChatSession s in _sessions)
@@ -55,10 +60,10 @@ public class Server : IJobQueue
             s.Send(_pendingList);
         }
         //if(_pendingList.Count > 0)
-        {
-           Console.WriteLine($"Flushed : {_pendingList.Count}");
+        //{
+        //   Console.WriteLine($"Flushed : {_pendingList.Count}");
 
-        }
+        //}
         _pendingList.Clear();
     }
 

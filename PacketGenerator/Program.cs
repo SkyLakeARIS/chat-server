@@ -29,10 +29,10 @@ namespace PacketGenerator
             {
                 IgnoreComments = true,
                 IgnoreWhitespace = true,
-           
+
             };
 
-            if(args.Length > 0)
+            if (args.Length > 0)
             {
                 pdlPath = args[0];
             }
@@ -41,7 +41,7 @@ namespace PacketGenerator
             {
                 reader.MoveToContent();
 
-                while(reader.Read())
+                while (reader.Read())
                 {
                     // 읽기 시작하는 부분이 depth 1, 줄을 읽을때마다 depth가 증가.
                     // XmlNodeType.Element은 xml의 여는 부분(<packet>, <PDL>)
@@ -65,20 +65,20 @@ namespace PacketGenerator
 
         public static void ParsePacket(XmlReader reader)
         {
-            if(reader.NodeType == XmlNodeType.EndElement)
+            if (reader.NodeType == XmlNodeType.EndElement)
             {
                 return;
             }
-            
+
             // 실수 했을 때 알기 위해서.
-            if(reader.Name.ToLower() != "packet")
+            if (reader.Name.ToLower() != "packet")
             {
                 Console.WriteLine("Invalid packet node");
                 return;
             }
 
             string packetName = reader["name"];
-            if(string.IsNullOrEmpty(packetName))
+            if (string.IsNullOrEmpty(packetName))
             {
                 Console.WriteLine("packet without name");
                 return;
@@ -87,10 +87,10 @@ namespace PacketGenerator
             // 패킷의 내부 멤버를 파싱.
             Tuple<string, string, string> t = ParseMembers(reader);
             genPackets += string.Format(PacketFormat.packetFormat, packetName, t.Item1, t.Item2, t.Item3);
-            packetEnums += string.Format(PacketFormat.packetEnumFormat, packetName, ++packetID)+Environment.NewLine+"\t";
+            packetEnums += string.Format(PacketFormat.packetEnumFormat, packetName, ++packetID) + Environment.NewLine + "\t";
 
             // 패킷 이름의 접두를 통해 서버/클라 패킷을 구분.
-            if(packetName.StartsWith("S_") || packetName.StartsWith("s_"))
+            if (packetName.StartsWith("S_") || packetName.StartsWith("s_"))
             {
                 // 서버가 보내는 패킷
                 clientRegister += string.Format(PacketFormat.managerRegisterFormat, packetName) + Environment.NewLine;
@@ -113,9 +113,9 @@ namespace PacketGenerator
 
             int depth = reader.Depth + 1;
 
-            while(reader.Read())
+            while (reader.Read())
             {
-                if(reader.Depth != depth)
+                if (reader.Depth != depth)
                 {
                     break;
                 }
@@ -130,7 +130,7 @@ namespace PacketGenerator
                 //}
 
                 // 멤버 변수마다 개행 처리
-                if(string.IsNullOrEmpty(memberCode) == false)
+                if (string.IsNullOrEmpty(memberCode) == false)
                 {
                     memberCode += Environment.NewLine;
                 }
@@ -144,7 +144,7 @@ namespace PacketGenerator
                 }
 
                 string memberType = reader.Name.ToLower();
-                switch(memberType)
+                switch (memberType)
                 {
                     case "byte":
                     case "sbyte":
@@ -187,7 +187,7 @@ namespace PacketGenerator
         public static Tuple<string, string, string> ParseList(XmlReader reader)
         {
             string listName = reader["name"];
-            if(string.IsNullOrEmpty(listName))
+            if (string.IsNullOrEmpty(listName))
             {
                 return null;
             }
