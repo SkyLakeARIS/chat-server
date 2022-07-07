@@ -25,7 +25,7 @@
         <TextBlock x:Name="NickNameBlock" HorizontalAlignment="Left" Margin="710,15,0,0" Foreground="Green" TextWrapping="Wrap" Text="TextBlock" FontSize="20" VerticalAlignment="Top" Height="60" Width="184"/>
         <Button x:Name="SignOutButton" Content="Sign Out" HorizontalAlignment="Left" Margin="819,75,0,0" Click="OnSignOutButton" VerticalAlignment="Top" Width="62" Height="32" />
 
-        <ListView x:Name="ChatListView" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="0,0,216,82"
+        <ListView x:Name="ChatListView" Margin="0,0,216,82"
                   VerticalContentAlignment="Bottom"
                   ScrollViewer.VerticalScrollBarVisibility="Visible"
                   ScrollViewer.CanContentScroll="False"
@@ -33,8 +33,8 @@
 
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="ID" Width="100"/>
-                    <GridViewColumn Header="Content" Width="500"/>
+                    <GridViewColumn Header="NickName" Width="100" DisplayMemberBinding="{Binding NickName}"/>
+                    <GridViewColumn Header="ChatMessage" Width="500" DisplayMemberBinding="{Binding ChatMessage}"/>
                 </GridView>
             </ListView.View>
         </ListView>

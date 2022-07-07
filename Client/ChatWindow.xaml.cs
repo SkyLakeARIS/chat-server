@@ -19,14 +19,27 @@ namespace Client
     /// <summary>
     /// ChatWindow.xaml에 대한 상호 작용 논리
     /// </summary>
+    class ChatDataModel
+    {
+	    public ChatDataModel(string nickName, string chatMessage)
+	    {
+		    NickName = nickName;
+			ChatMessage = chatMessage;
+	    }
+	    public string NickName { get; set; }
+	    public string ChatMessage { get; set; }
+    }
     public partial class ChatWindow : Window
     {
-	    List<string> _chatList = new List<string>();
+
+
+	    List<ChatDataModel> _chatList = new List<ChatDataModel>();
 	    List<string> _userList = new List<string>();
 
 		public ChatWindow()
         {
             InitializeComponent();
+            ChatListView.ItemsSource = _chatList;
         }
 
 
@@ -59,12 +72,15 @@ namespace Client
 			ChatSession.Instance.Send(packet.Write());
 		}
 
-		public void RefreshChatListView(string chatMessage)
+		public void RefreshChatListView(string nickName, string chatMessage)
         {
+			ChatDataModel chatDataModel = new ChatDataModel(nickName, chatMessage);
 
-	        ChatListView.Items.Add(chatMessage);
+			//ChatListView.Items.Add(chatDataModel);
 
-	        _chatList.Add(chatMessage);
+			_chatList.Add(chatDataModel);
+
+			ChatListView.Items.Refresh();
 
 			//ChatListView.SelectedIndex = ChatListView.Items.Count - 1;
 			//ChatListView.ScrollIntoView(ChatListView.SelectedItem);
