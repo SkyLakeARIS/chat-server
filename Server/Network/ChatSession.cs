@@ -42,8 +42,7 @@ public class ChatSession : PacketSession
         NickName = SessionId.ToString();
         //Server server = chatServer;
         // server.Push(() => server.Enter(this));
-        Program.Server.Push(() => Program.Server.Enter(this));
-        chatServer = Program.Server;
+        //chatServer = Program.Server;
         //Program.Server.Enter(this);
 
     }
@@ -51,6 +50,8 @@ public class ChatSession : PacketSession
     public override void OnDisconnected(EndPoint endPoint)
     {
         SessionManager.instance.Remove(this);
+        // 프로그램을 강제 종료 해버릴 경우를 대비해서 일단 남겨놓음.
+        // (그럴것이라고 생각하지만 100%까지는 확신이 안듦)
         if(chatServer != null)
         {
             // 이렇게 람다를 사용하면 해당 개체가 사라지면 에러다. Program.Server.Push(() => { Program.Server.Leave(this); })

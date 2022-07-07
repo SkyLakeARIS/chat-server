@@ -31,8 +31,10 @@ public static class ChatHandler
         // 세션 정보에 서버로부터 받은 유저정보를 초기화 합니다.
         ChatSession.Instance._NickName = packet.UserName;
         ChatSession.Instance._UID = packet.UserID;
+        ChatSession.Instance._UserID = packet.UserName;
 
-		Application.Current.Dispatcher.Invoke(() =>
+
+        Application.Current.Dispatcher.Invoke(() =>
         {
             // 로그인이 성공적으로 되었으므로
             // 기존 메인 윈도우는 닫고 채팅 윈도우를 엽니다.
@@ -170,13 +172,13 @@ public static class ChatHandler
     {
         S_SendChat packet = arg2 as S_SendChat;
 
-        string chatMessage = $"{packet.NickName} : {packet.Message}";
+        //string chatMessage = $"{packet.NickName} : {packet.Message}";
 
 
         Application.Current.Dispatcher.Invoke(() =>
 	        {
 		        ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
-		        chatWindow.RefreshChatListView(chatMessage);
+		        chatWindow.RefreshChatListView(packet.NickName, packet.Message);
 	        }
         );
 

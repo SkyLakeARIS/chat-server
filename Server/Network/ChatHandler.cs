@@ -57,9 +57,8 @@ public static class ChatHandler
 
     internal static void C_RequestSignInHandler(PacketSession arg1, IPacket arg2)
     {
-	    C_RequestSignIn packet = arg2 as C_RequestSignIn;
 	    ChatSession session = arg1 as ChatSession;
-	    List<AccountEntity> find = null;
+	    C_RequestSignIn packet = arg2 as C_RequestSignIn;
 
 	    // SignIn 패킷 개선사항
         // 계정 정보를 UID, ID, PW, accountType, nickname 로 수정
@@ -73,8 +72,9 @@ public static class ChatHandler
 	        return;
         }
 
+        List<AccountEntity> find = null;
         try
-	    {
+        {
 		    DatabaseManager instance = DatabaseManager.Instance;
 		    var accountsCollection = instance.GetCollection<AccountEntity>("accounts");
 		    //BsonDocument
@@ -89,8 +89,6 @@ public static class ChatHandler
             throw;
 	    }
 
-	    Console.WriteLine($"LOG - {session.NickName}({session.UserID}) was Sign In.");
-
 
         // 로그인 실패시 클라에게 결과를 알립니다.
         if (find.Count <= 0)
@@ -103,7 +101,7 @@ public static class ChatHandler
         
         // 로그인 성공시 처리 부분입니다.
         // 유저 정보들을 클라에게 전송합니다.
-        session.UserID = 0;
+        session.UserID = session.SessionId;
         session.NickName = find[0].nickName;
 
         S_SuccessSignIn successSignInPacket = new S_SuccessSignIn();
@@ -116,10 +114,15 @@ public static class ChatHandler
         // 이는 현재 구조가 메인채팅 서버 하나로 통일해서 구현 중이기 때문에 이곳에서 처리.
         S_UserSignIn userSignInPacket = new S_UserSignIn();
         userSignInPacket.UserName = session.NickName;
-        
+
+        // 로그인한 해당 세션을 채팅방에 입장 시킵니다.
+        // 현재 main 채팅방으로 통일하여 나중에 서버 추가가 가능하면 그에 맞게 수정 필요.
+        Program.Server.Push(() => Program.Server.Enter(session));
+
         // SendChat과 마찬가지로 server를 따로 빼서 사용합니다.
         Server server = session.chatServer;
         server.Push(() => {server.Broadcast(session, userSignInPacket.Write()); });
+        Console.WriteLine($"LOG - {session.NickName}({session.UserID}) was Sign In.");
 
     }
 
@@ -214,6 +217,10 @@ public static class ChatHandler
         {
             server.Broadcast(session, userSignOutPacket.Write());
         });
+
+        // 클라이언트 세션을 '채팅방'에서 제거한다.
+        server.Push(() => server.Leave(session));
+        session.chatServer = null;
 
         S_SucessSignOut successPacket = new S_SucessSignOut();
         successPacket.Message = "로그아웃 되었습니다.";
