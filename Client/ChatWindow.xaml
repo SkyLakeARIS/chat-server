@@ -8,14 +8,14 @@
         PreviewKeyDown="Window_PreviewKeyDown"
         Title="ChatWindow" Height="520" Width="910" ResizeMode="NoResize">
     <Grid>
-        <ListView x:Name="UserListBox" d:ItemsSource="{d:SampleData ItemCount=20}" Margin="694,112,0,16"
+        <ListView x:Name="UserListBox" Margin="694,112,0,16"
                   VerticalContentAlignment="Top"
                   ScrollViewer.VerticalScrollBarVisibility="Visible"
                   ScrollViewer.CanContentScroll="False"
                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Current User List" Width="100"/>
+                    <GridViewColumn Header="Current User List" Width="100" DisplayMemberBinding="{Binding Nickname}"/>
                 </GridView>
             </ListView.View>
         </ListView>
@@ -33,7 +33,7 @@
 
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="NickName" Width="100" DisplayMemberBinding="{Binding NickName}"/>
+                    <GridViewColumn Header="NickName" Width="100" DisplayMemberBinding="{Binding Nickname}"/>
                     <GridViewColumn Header="ChatMessage" Width="500" DisplayMemberBinding="{Binding ChatMessage}"/>
                 </GridView>
             </ListView.View>

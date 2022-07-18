@@ -1,7 +1,7 @@
 ﻿using System.Net;
+using System.Reflection.PortableExecutable;
 using System.Text;
 using Core;
-using Core.Data;
 using Core.Packet;
 
 namespace Server.Network;
@@ -15,14 +15,16 @@ public class ChatSession : PacketSession
  
     0 유저 1 호스트 2 관리자
   --------------------*/
-    public long UserID { get; set; }
-    public string UserName { get; set; } = "qwer";
-    public string? NickName { get; set; }
-    public AccountPermissions Permissions { get; set; }
+    private long _UID;
 
+    private string _Nickname;
+
+    // 수정이 끝나면 private으로 전환하기
     public Server chatServer = null;
 
-    public int SessionId { get; set; }
+    private List<long> joinedServerList = new List<long>();
+
+    public long SessionId { get; set; }
 
     public override void OnSend(int numOfBytes)
     {
@@ -39,7 +41,7 @@ public class ChatSession : PacketSession
         Console.WriteLine($"{endPoint}가 접속함.");
 
         // 임시로 채팅 서버에 강제로 입장.
-        NickName = SessionId.ToString();
+        //_Nickname = SessionId.ToString();
         //Server server = chatServer;
         // server.Push(() => server.Enter(this));
         //chatServer = Program.Server;
@@ -64,5 +66,34 @@ public class ChatSession : PacketSession
         }
    
         Console.WriteLine($"{endPoint}가 접속 해제함.");
+    }
+
+    public long GetUID()
+    {
+	    return _UID;
+    }
+    public void SetUID(long uid)
+    {
+	    _UID = uid;
+    }
+
+    public string GetNickname()
+    {
+	    return _Nickname;
+    }
+
+    public void SetNickname(string nickname)
+    {
+	    _Nickname = nickname;
+    }
+
+    public void AddJoinedServer(long serverID)
+    {
+	    joinedServerList.Add(serverID);
+    }
+
+    public List<long> GetJoinedServerList()
+    {
+        return joinedServerList;
     }
 }

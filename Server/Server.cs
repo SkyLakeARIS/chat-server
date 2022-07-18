@@ -9,8 +9,9 @@ namespace Server;
 // 채팅방을 관리하도록 할 수 있다.
 public class Server : IJobQueue
 {
-    private readonly List<ChatSession> _sessions = new List<ChatSession>();
-    public string chatServerName;
+    private readonly List<ChatSession> _sessionList = new List<ChatSession>();
+    private string _chatServerName;
+    private long _serverID;
     JobQueue _jobQueue = new JobQueue();
     // jobQueue를 사용하여 직접 호출이 아니라 델리게이트를 push하는 방식으로 변경. 즉, 함수 호출이라는 액션.
     // 주문서와 비슷한 역할을 한다.
@@ -18,8 +19,14 @@ public class Server : IJobQueue
     // JobQueue의 경우, 프로젝트마다 위치가 조금 달라질 수 있는데, 오픈되어있는 맵이 아닌 로딩하여 다음 맵으로 넘어가는 방식의 경우에는 
     // 현재 방식처럼( 채팅방하나) job queue를 각자 가지고 있는 방식.
     // 그렇지 않고 mmo나 오픈월드(심리스) 같은 경우는 모든 개체가 잡큐를 가지고 있기도 한다고 함.(무기, 스킬, 유저, 등등)
-    
     List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
+
+    private List<long> _userList = new List<long>();
+
+    public Server(string serverName)
+    {
+        _chatServerName = serverName;
+    }
 
     // 패킷 모아보내기
     public void Push(Action job)
@@ -36,7 +43,7 @@ public class Server : IJobQueue
         // 이런 방식은 바로바로 브로드캐스트를 하지 않고 조금 모았다가 한번에 보내는 방식. (잡큐와 같이 매우 중요한 개념 중 하나.)
 
         S_SendChat respondPacket = new S_SendChat();
-        respondPacket.NickName = session.NickName;
+        respondPacket.Nickname = session.GetNickname();
         respondPacket.Message = message;
         ArraySegment<byte> segment = respondPacket.Write();
   
@@ -55,7 +62,7 @@ public class Server : IJobQueue
 
     public void Flush()
     {
-        foreach (ChatSession s in _sessions)
+        foreach (ChatSession s in _sessionList)
         {
             s.Send(_pendingList);
         }
@@ -70,16 +77,57 @@ public class Server : IJobQueue
     public void Enter(ChatSession session)
     {
 
-        _sessions.Add(session);
+	    _sessionList.Add(session);
         session.chatServer = this;
-        
     }
 
     public void Leave(ChatSession session)
     {
-    
-        _sessions.Remove(session);
-        
+	    _sessionList.Remove(session);
     }
 
+    public ChatSession Find(long id)
+    {
+	    foreach (var session in _sessionList)
+	    {
+		    if (session.GetUID() == id)
+		    {
+			    return session;
+		    }
+	    }
+	    return null;
+    }
+
+    public string GetServerName()
+    {
+	    return _chatServerName;
+    }
+
+    public void ChangeServerName(string newName)
+    {
+        _chatServerName = newName;
+    }
+
+    public long GetServerID()
+    {
+	    return _serverID;
+    }
+
+    public void SetServerID(long serverID)
+    {
+        _serverID = serverID;
+    }
+
+    public List<S_CurrentUserList.UserList> GetNicknameList()
+    {
+        List<S_CurrentUserList.UserList> nicknameList = new List<S_CurrentUserList.UserList>();
+	    foreach (var user in _sessionList)
+	    {
+		    S_CurrentUserList.UserList nickname = new S_CurrentUserList.UserList();
+		    nickname.Nickname = user.GetNickname();
+
+		    nicknameList.Add(nickname);
+	    }
+        return nicknameList;
+    }
 }

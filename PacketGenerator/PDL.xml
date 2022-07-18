@@ -10,72 +10,72 @@
   <packet name="C_RequestSignUp">
   <string name ="ID"/>
   <string name ="Password"/>
-  <string name ="UserName"/>
+  <string name ="Nickname"/>
   </packet>
   <packet name ="C_RequestSignOut">
-  <long name ="UserID"/>
+  <long name ="UID"/>
   </packet>
   <packet name ="C_RequestEnterServer">
-  <long name = "UserID"/>
-  <string name ="ServerName"/>
+  <long name = "UID"/>
+  <long name ="ServerID"/>
   </packet>
   <packet name ="C_RequestLeaveServer">
-  <long name ="UserID"/>
-  <string name ="ServerName"/>
+  <long name ="UID"/>
+  <long name ="ServerID"/>
   </packet>
   <packet name ="C_RequestCreateServer">
-  <long name ="UserID"/>
-  <string name ="ServerName"/>
+  <long name ="UID"/>
+  <string name="ServerName"/>
   </packet>
   <packet name ="C_RequestDeleteServer">
-  <long name ="UserID"/>
-  <string name ="ServerName"/>
+  <long name ="UID"/>
+  <long name ="ServerID"/>
   </packet>
   <packet name ="C_RequestJoinServer">
-  <long name ="UserID"/>
+  <long name ="UID"/>
   <string name ="ServerName"/>
   </packet>
   <packet name ="C_RequestCommand">
-  <long name ="UserID"/>
+  <long name ="UID"/>
   <string name = "Command"/>
   </packet>
   <packet name ="C_RequestServerList">
-  <long name ="UserID"/>
+  <long name ="UID"/>
   </packet>
   <packet name ="S_SuccessSignIn">
-  <long name ="UserID"/>
-  <string name ="UserName"/>
+  <long name ="UID"/>
+  <string name ="Nickname"/>
   </packet>
   <packet name ="S_FailSignIn">
   <string name="Reason"/>
   </packet>
-  <packet name ="S_UserSignIn">
-  <string name ="UserName"/>
-  </packet>
-  <packet name ="S_UserSignOut">
-  <string name ="UserName"/>
-  </packet>
   <packet name ="S_SuccessSignUp">
-  <string name ="Reason"/>
+  <string name ="Message"/>
   </packet>
   <packet name ="S_FailSignUp">
   <string name ="Reason"/>
   </packet>
-  <packet name ="S_SucessSignOut">
+  <packet name ="S_SuccessSignOut">
   <string name ="Message"/>
   </packet>
   <packet name ="S_FailSignOut">
   <string name ="Reason"/>
   </packet>
+  <packet name ="S_UserSignIn">
+  <string name ="Nickname"/>
+  </packet>
+  <packet name ="S_UserSignOut">
+  <string name ="Nickname"/>
+  </packet>
   <packet name ="S_SuccessCommand">
-  <string name ="TargetUserName"/>
-  <string name ="Message"/>
+  <string name ="TargetNickname"/>
+  <string name ="Command"/>
   </packet>
   <packet name ="S_FailCommand">
   <string name ="Reason"/>
   </packet>
   <packet name ="S_SendChat">
-  <string name ="NickName"/>
+  <string name ="Nickname"/>
   <string name ="Message"/>
   </packet>
   <packet name ="S_ExitServer">
@@ -83,6 +83,18 @@
   </packet>
   <packet name ="S_JoinServer">
   <string name ="Message"/>
+  </packet>
+  <packet name ="S_SuccessCreateServer">
+  <string name="ServerName"/>
+  <long name="ServerID"/>
+  </packet>
+  <packet name ="S_FailCreateServer">
+  <string name="Reason"/>
+  </packet>
+  <packet name ="S_CurrentUserList">
+  <list name ="UserList">
+    <string name ="Nickname"/>
+  </list>
   </packet>
 </PDL>
   <!--포멧: 보낸 주체(C, S)_패킷 타입-->

@@ -14,6 +14,7 @@ public sealed record AccountEntity : IMongoEntity
 {
     [BsonId]
     public ObjectId entityId { get; set; }
+    public long UID { get; init; }
 
     public string ID { get; init; }
 

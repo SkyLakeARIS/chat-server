@@ -1,10 +1,9 @@
 ﻿using Core;
-using Core.Packet;
 using System;
-using System.Runtime.CompilerServices;
-using System.Security.Permissions;
+using System.Collections.Generic;
 using System.Threading;
 using System.Windows;
+using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Threading;
 
@@ -12,27 +11,14 @@ namespace Client.Network;
 
 public static class ChatHandler
 {
-	// 윈도우 핸들 얻어오는 방법 중 하나
-
-    public static void OnUserChat(ChatSession session, InPacket packet)
-    {
-        var name = packet.DecodeString();
-        var message = packet.DecodeString();
-
-        Console.WriteLine($"{name} : {message}");
-    }
-
-  //  [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.UnmanagedCode)]
 	internal static void S_SuccessSignInHandler(PacketSession arg1, IPacket arg2)
 	{
 	    S_SuccessSignIn packet = arg2 as S_SuccessSignIn;
 
 
         // 세션 정보에 서버로부터 받은 유저정보를 초기화 합니다.
-        ChatSession.Instance._NickName = packet.UserName;
-        ChatSession.Instance._UID = packet.UserID;
-        ChatSession.Instance._UserID = packet.UserName;
-
+        ChatSession.Instance._NickName = packet.Nickname;
+        ChatSession.Instance._UID = packet.UID;
 
         Application.Current.Dispatcher.Invoke(() =>
         {
@@ -47,14 +33,11 @@ public static class ChatHandler
             Application.Current.Dispatcher.Invoke(() =>
 			{ 
 				ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
-				chatWindow.NickNameBlock.Text = $"Hello! \n {packet.UserName}.";
+				chatWindow.NickNameBlock.Text = $"Hello! \n {packet.Nickname}.";
 			}
 			);
         });
 
-
-
- 
 
 
         //mainWindow.Dispatcher.Invoke(() => {
@@ -84,32 +67,26 @@ public static class ChatHandler
     {
 	    S_FailSignIn packet = arg2 as S_FailSignIn;
 
-	    MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
+	    Application.Current.Dispatcher.Invoke(() =>
+	    {
+		    MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
 
-	    mainWindow.Dispatcher.Invoke(() => {
 		    mainWindow.StateBlock.Text = packet.Reason;
 		    mainWindow.StateBlock.Foreground = Brushes.Red;
-        });
+	    });
 
-	    mainWindow.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
-	    {
-	        mainWindow.StateBlock.Text = packet.Reason;
-		    mainWindow.StateBlock.Foreground = Brushes.Red;
-	    }));
-
-    }
+	}
 
     internal static void S_SuccessSignUpHandler(PacketSession arg1, IPacket arg2)
     {
         S_SuccessSignUp packet = arg2 as S_SuccessSignUp;
 
-        MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
-
-        mainWindow.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+        Application.Current.Dispatcher.Invoke(() =>
         {
-	        mainWindow.StateBlock.Text = packet.Reason;
+	        MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
+	        mainWindow.StateBlock.Text = packet.Message;
 	        mainWindow.StateBlock.Foreground = Brushes.Green;
-        }));
+        });
 
     }
 
@@ -117,27 +94,21 @@ public static class ChatHandler
     {
 	    S_FailSignUp packet = arg2 as S_FailSignUp;
 
-	    MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
-	    mainWindow.Dispatcher.Invoke(DispatcherPriority.Normal, new Action(() =>
+	    Application.Current.Dispatcher.Invoke(() =>
 	    {
-		    mainWindow.StateBlock.Text = packet.Reason;
-		    mainWindow.StateBlock.Foreground = Brushes.Red;
-	    }));
-
-	    mainWindow.Dispatcher.Invoke(() => {
+		    MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
 		    mainWindow.StateBlock.Text = packet.Reason;
 		    mainWindow.StateBlock.Foreground = Brushes.Red;
 	    });
     }
 
-    internal static void S_SucessSignOutHandler(PacketSession arg1, IPacket arg2)
+    internal static void S_SuccessSignOutHandler(PacketSession arg1, IPacket arg2)
     {
-	    S_SucessSignOut packet = arg2 as S_SucessSignOut;
+	    S_SuccessSignOut packet = arg2 as S_SuccessSignOut;
 
 	    ChatSession.Instance._NickName = "";
         // 혹은 서버에서 UID를 0으로 안주도록 하거나 양식을 다르게
-        ChatSession.Instance._UID = -1;
-        ChatSession.Instance._UserID = "";
+        ChatSession.Instance._UID = 0;
 
 
         Application.Current.Dispatcher.Invoke(() =>
@@ -172,22 +143,22 @@ public static class ChatHandler
     {
         S_SendChat packet = arg2 as S_SendChat;
 
-        //string chatMessage = $"{packet.NickName} : {packet.Message}";
+        //string chatMessage = $"{packet.Nickname} : {packet.Message}";
 
 
         Application.Current.Dispatcher.Invoke(() =>
 	        {
 		        ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
-		        chatWindow.RefreshChatListView(packet.NickName, packet.Message);
+		        chatWindow.RefreshChatListView(packet.Nickname, packet.Message);
 	        }
         );
 
         //Console.SetCursorPosition(session.x, session.y);
         //session.y++;
-        //if(packet.NickName == "1")
+        //if(packet.Nickname == "1")
         {
 
-            //string message = $"[{packet.NickName}] | {packet.Message}";
+            //string message = $"[{packet.Nickname}] | {packet.Message}";
             //Console.WriteLine(message);
         }
     }
@@ -204,12 +175,12 @@ public static class ChatHandler
 
     internal static void S_UserSignInHandler(PacketSession arg1, IPacket arg2)
     {
-        ChatSession session = arg2 as ChatSession;
+        ChatSession session = arg1 as ChatSession;
         S_UserSignIn packet = arg2 as S_UserSignIn;
         
         // 브로드캐스트한 클라와 같은 클라이면 무시한다.
-        // 나중에는 NickName이 아니라 UID로 체크하도록 변경이 필요하다.
-        if(ChatSession.Instance._NickName == packet.UserName)
+        // 나중에는 Nickname이 아니라 UID로 체크하도록 변경이 필요하다.
+        if(ChatSession.Instance._NickName == packet.Nickname)
         {
 	        Thread.Sleep(250);
         }
@@ -217,19 +188,19 @@ public static class ChatHandler
 	    Application.Current.Dispatcher.Invoke(() =>
 		    {
 			    ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
-			    chatWindow.AddCurrentUserList(packet.UserName);
+			    chatWindow.AddCurrentUserList(packet.Nickname);
 		    }
 	    );
     }
 
     internal static void S_UserSignOutHandler(PacketSession arg1, IPacket arg2)
     {
-	    ChatSession session = arg2 as ChatSession;
+	    ChatSession session = arg1 as ChatSession;
 	    S_UserSignOut packet = arg2 as S_UserSignOut;
 
         // 브로드캐스트한 클라와 같은 클라이면 무시한다.
-        // 나중에는 NickName이 아니라 UID로 체크하도록 변경이 필요하다.
-        if (ChatSession.Instance._NickName == packet.UserName)
+        // 나중에는 Nickname이 아니라 UID로 체크하도록 변경이 필요하다.
+        if (ChatSession.Instance._NickName == packet.Nickname)
 	    {
 		    return;
 	    }
@@ -237,8 +208,38 @@ public static class ChatHandler
         Application.Current.Dispatcher.Invoke(() =>
 		    {
 			    ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
-			    chatWindow.RemoveCurrentUserList(packet.UserName);
+			    chatWindow.RemoveCurrentUserList(packet.Nickname);
 		    }
 	    );
+    }
+
+    internal static void S_CurrentUserListHandler(PacketSession arg1, IPacket arg2)
+    {
+	    ChatSession session = arg1 as ChatSession;
+	    S_CurrentUserList packet = arg2 as S_CurrentUserList;
+
+	    List<UserDataModel> userList = new List<UserDataModel>();
+	    foreach (var user in packet.userLists)
+	    {
+            userList.Add(new UserDataModel(user.Nickname));
+	    }
+
+
+        Application.Current.Dispatcher.Invoke(() =>
+		    {
+			    ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
+			    chatWindow.AddCurrentUserList(userList);
+		    }
+	    );
+    }
+
+    internal static void S_SuccessCreateServerHandler(PacketSession arg1, IPacket arg2)
+    {
+	    throw new NotImplementedException();
+    }
+
+    internal static void S_FailCreateServerHandler(PacketSession arg1, IPacket arg2)
+    {
+	    throw new NotImplementedException();
     }
 }

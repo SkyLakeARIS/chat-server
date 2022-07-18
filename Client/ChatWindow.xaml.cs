@@ -19,27 +19,56 @@ namespace Client
     /// <summary>
     /// ChatWindow.xaml에 대한 상호 작용 논리
     /// </summary>
-    class ChatDataModel
+    public class ChatDataModel
     {
-	    public ChatDataModel(string nickName, string chatMessage)
+	    public ChatDataModel(string nickname, string chatMessage)
 	    {
-		    NickName = nickName;
+		    Nickname = nickname;
 			ChatMessage = chatMessage;
 	    }
-	    public string NickName { get; set; }
+	    public string Nickname { get; set; }
 	    public string ChatMessage { get; set; }
     }
-    public partial class ChatWindow : Window
+    public class UserDataModel
+    {
+	    public UserDataModel(string nickname)
+	    {
+		    Nickname = nickname;
+	    }
+
+	    public override bool Equals(object? obj)
+	    {
+		    if (base.Equals(obj))
+		    {
+			    return true;
+		    }
+
+			UserDataModel? nickname = obj as UserDataModel;
+			if (nickname != null && nickname.Nickname == this.Nickname)
+			{
+			   return true;
+			}
+
+		    return false;
+	    }
+
+	    public string Nickname { get; set; }
+    }
+
+	public partial class ChatWindow : Window
     {
 
 
 	    List<ChatDataModel> _chatList = new List<ChatDataModel>();
 	    List<string> _userList = new List<string>();
+		List<UserDataModel> _userDataModel = new List<UserDataModel>();
 
 		public ChatWindow()
         {
             InitializeComponent();
             ChatListView.ItemsSource = _chatList;
+            UserListBox.ItemsSource = _userDataModel;
+
         }
 
 
@@ -67,7 +96,7 @@ namespace Client
         private void OnSignOutButton(object sender, RoutedEventArgs e)
         {
 	        C_RequestSignOut packet = new C_RequestSignOut();
-	        packet.UserID = ChatSession.Instance._UID;
+	        packet.UID = ChatSession.Instance._UID;
 
 			ChatSession.Instance.Send(packet.Write());
 		}
@@ -103,39 +132,46 @@ namespace Client
 			//   }
 		}
 
-		public void AddCurrentUserList(string userName)
+		public void AddCurrentUserList(string nickname)
+		{
+			UserDataModel user = new UserDataModel(nickname);
+			_userDataModel.Add(user);
+			UserListBox.Items.Refresh();
+
+			//ChatListView.ItemsSource = _chatList;
+			//ChatListView.Items.Refresh();
+
+			//if (VisualTreeHelper.GetChildrenCount(ChatListView) > 0) 
+			//   {
+			//    Border border = (Border)VisualTreeHelper.GetChild(ChatListView, 0);
+			//    ScrollViewer scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
+			//       scrollViewer.ScrollToBottom();
+			//   }
+		}
+
+		public void AddCurrentUserList(List<UserDataModel> nicknameList)
+		{
+			_userDataModel.AddRange(nicknameList);
+			UserListBox.Items.Refresh();
+		}
+
+		public void RemoveCurrentUserList(string nickname)
         {
+	        UserDataModel user = new UserDataModel(nickname);
 
-	        UserListBox.Items.Add(userName);
+			_userDataModel.Remove(user);
+			UserListBox.Items.Refresh();
 
-	        _userList.Add(userName);
-	        //ChatListView.ItemsSource = _chatList;
-	        //ChatListView.Items.Refresh();
+			//ChatListView.ItemsSource = _chatList;
+			//ChatListView.Items.Refresh();
 
-	        //if (VisualTreeHelper.GetChildrenCount(ChatListView) > 0) 
-	        //   {
-	        //    Border border = (Border)VisualTreeHelper.GetChild(ChatListView, 0);
-	        //    ScrollViewer scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
-	        //       scrollViewer.ScrollToBottom();
-	        //   }
-        }
-
-        public void RemoveCurrentUserList(string userName)
-        {
-
-	        var list = UserListBox.Items;
-			list.Remove(userName);
-	        _userList.Remove(userName);
-	        //ChatListView.ItemsSource = _chatList;
-	        //ChatListView.Items.Refresh();
-
-	        //if (VisualTreeHelper.GetChildrenCount(ChatListView) > 0) 
-	        //   {
-	        //    Border border = (Border)VisualTreeHelper.GetChild(ChatListView, 0);
-	        //    ScrollViewer scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
-	        //       scrollViewer.ScrollToBottom();
-	        //   }
-        }
+			//if (VisualTreeHelper.GetChildrenCount(ChatListView) > 0) 
+			//   {
+			//    Border border = (Border)VisualTreeHelper.GetChild(ChatListView, 0);
+			//    ScrollViewer scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
+			//       scrollViewer.ScrollToBottom();
+			//   }
+		}
 
 	}
 }

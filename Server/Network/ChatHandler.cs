@@ -11,19 +11,8 @@ namespace Server.Network;
 
 public static class ChatHandler
 {
-    public static void OnUserChat(ChatSession session, InPacket packet)
-    {
-        var message = packet.DecodeString();
-        var outPacket = new OutPacket((int)ServerPacket.Chat);
-        outPacket.EncodeString(session.NickName);
-        outPacket.EncodeString(message);
 
-        var sendBuff = outPacket.Close();
-
-       // Program.Server.Broadcast(sendBuff);
-    }
-
-    internal static void C_SendChatHandler(PacketSession arg1, IPacket arg2)
+	internal static void C_SendChatHandler(PacketSession arg1, IPacket arg2)
     {
         C_SendChat packet = arg2 as C_SendChat;
         ChatSession session = arg1 as ChatSession;
@@ -73,25 +62,15 @@ public static class ChatHandler
         }
 
         List<AccountEntity> find = null;
-        try
-        {
-		    DatabaseManager instance = DatabaseManager.Instance;
-		    var accountsCollection = instance.GetCollection<AccountEntity>("accounts");
-		    //BsonDocument
-		    find = accountsCollection.Find(x => x.ID.Equals(packet.ID) && x.password.Equals(packet.Password)).ToList();
-	    }
-	    catch (Exception e)
-	    {
-		    Console.WriteLine(e);
-		    S_FailSignIn failSignInPacket = new S_FailSignIn();
-		    failSignInPacket.Reason = "로그인에 실패했습니다.";
-		    session.Send(failSignInPacket.Write());
-            throw;
-	    }
+
+	    DatabaseManager instance = DatabaseManager.Instance;
+	    var accountsCollection = instance.GetCollection<AccountEntity>(DatabaseManager.AccountCollection);
+	    //BsonDocument
+	    find = accountsCollection.Find(x => x.ID.Equals(packet.ID) && x.password.Equals(packet.Password)).ToList();
 
 
         // 로그인 실패시 클라에게 결과를 알립니다.
-        if (find.Count <= 0)
+        if (find.Count <= 0 || find == null)
         {
 	        S_FailSignIn failSignInPacket = new S_FailSignIn();
 	        failSignInPacket.Reason = "아이디 또는 비밀번호가 다릅니다.";
@@ -101,19 +80,30 @@ public static class ChatHandler
         
         // 로그인 성공시 처리 부분입니다.
         // 유저 정보들을 클라에게 전송합니다.
-        session.UserID = session.SessionId;
-        session.NickName = find[0].nickName;
+        session.SetUID(find[0].UID);
+        session.SetNickname(find[0].nickName);
 
         S_SuccessSignIn successSignInPacket = new S_SuccessSignIn();
-        successSignInPacket.UserID = session.UserID;
-        successSignInPacket.UserName = session.NickName;
+        successSignInPacket.UID = session.GetUID();
+        successSignInPacket.Nickname = session.GetNickname();
         session.Send(successSignInPacket.Write());
 
-        // 서버에 접속한 유저의 닉네임을 현재 접속중인 클라이언트들에게 전부
-        // 브로드캐스트.
+
+        // 서버에 접속한 유저의 닉네임을 현재 접속중인 클라이언트들에게 브로드캐스트합니다
         // 이는 현재 구조가 메인채팅 서버 하나로 통일해서 구현 중이기 때문에 이곳에서 처리.
         S_UserSignIn userSignInPacket = new S_UserSignIn();
-        userSignInPacket.UserName = session.NickName;
+        userSignInPacket.Nickname = session.GetNickname();
+
+
+        // 접속한 유저를 채팅방에 입장시키기 전에
+        // 유저에게 접속자 리스트 보내기 위해서
+        // 접속해있는 유저 리스트를 구성합니다.
+        S_CurrentUserList userListPacket = new S_CurrentUserList();
+        userListPacket.userLists = Program.Server.GetNicknameList();
+        if (userListPacket.userLists.Count > 0)
+        {
+	        session.Send(userListPacket.Write());
+        }
 
         // 로그인한 해당 세션을 채팅방에 입장 시킵니다.
         // 현재 main 채팅방으로 통일하여 나중에 서버 추가가 가능하면 그에 맞게 수정 필요.
@@ -121,9 +111,33 @@ public static class ChatHandler
 
         // SendChat과 마찬가지로 server를 따로 빼서 사용합니다.
         Server server = session.chatServer;
-        server.Push(() => {server.Broadcast(session, userSignInPacket.Write()); });
-        Console.WriteLine($"LOG - {session.NickName}({session.UserID}) was Sign In.");
 
+        // 유저가 접속한 사실을 접속자들에게 브로드 캐스트하여 접속한 유저를 추가하도록 합니다.
+        server.Push(() => {server.Broadcast(session, userSignInPacket.Write()); });
+        Console.WriteLine($"LOG - {session.GetNickname()}({session.GetUID()}) was Sign In.");
+
+        // 입장 메세지 브로드캐스트
+        // 임시로 세션은 현재 로그인하는 세션을 사용해서, 나중에 나은 방법 찾을 필요가 있음.
+        S_SendChat signInMessage = new S_SendChat();
+        signInMessage.Nickname = "Server";
+        signInMessage.Message = $"{session.GetNickname()}님이 입장했습니다.";
+        server.Push(() => { server.Broadcast(session, signInMessage.Write());});
+
+        // 채팅 서버에 가입할 때 처리할 DB 로직
+        //ChatServerEntity chatServerEntity = new ChatServerEntity()
+        //{
+        // entityId = ObjectId.GenerateNewId(),
+        // serverID = 1,
+        // serverName = session.chatServer.GetServerName(),
+        //    userList = new List<long>()
+        //};
+
+        //chatServerEntity.userList.Add(session.SessionId);
+        //chatServerEntity.userList.Add(session.NickName+"111");
+        //chatServerEntity.userList.Add(session.NickName+"222");
+
+        //      var collection =  DatabaseManager.Instance.GetCollection<ChatServerEntity>(DatabaseManager.ChatServerCollection);
+        //collection.InsertOne(chatServerEntity);
     }
 
     internal static void C_RequestSignUpHandler(PacketSession arg1, IPacket arg2)
@@ -143,7 +157,7 @@ public static class ChatHandler
 	        isFail = true;
         }
 
-        if (packet.UserName.Length <= 0 || packet.UserName.Length > 10)
+        if (packet.Nickname.Length <= 0 || packet.Nickname.Length > 10)
         {
 	        isFail = true;
         }
@@ -151,47 +165,45 @@ public static class ChatHandler
 
         if (isFail)
         {
-	        S_FailSignUp failPacket = new S_FailSignUp();
-	        failPacket.Reason = "회원 가입 처리 실패 : 올바르지 않은 정보입니다.";
-	        session.Send(failPacket.Write());
+	        S_FailSignUp failSignUpPacket = new S_FailSignUp();
+	        failSignUpPacket.Reason = "회원 가입 처리 실패 : 올바르지 않은 정보입니다.";
+	        session.Send(failSignUpPacket.Write());
 	        return;
         }
 
-
+        DatabaseManager instance = DatabaseManager.Instance;
+        var accountsCollection = instance.GetCollection<AccountEntity>(DatabaseManager.AccountCollection);
 
         // 이미 가입된 계정이 존재하는 경우를 체크합니다.
+        var find = accountsCollection.Find(x => x.ID.Equals(packet.ID)).ToList();
 
-        // to do
-
-        try
+        if (find.Count > 0)
         {
-			DatabaseManager instance = DatabaseManager.Instance;
-	        var accountsCollection = instance.GetCollection<AccountEntity>("accounts");
-	        AccountEntity account = new AccountEntity()
-	        {
-		        entityId = ObjectId.GenerateNewId(),
-	            ID = packet.ID,
-	            password = packet.Password,
-	            nickName = packet.UserName,
-	            accountType = EAccountType.User,
-	        };
-	        accountsCollection.InsertOne(account);
+	        S_FailSignUp failSignUpPacket = new S_FailSignUp();
+	        failSignUpPacket.Reason = "이미 가입되어 있는 계정입니다.";
+	        session.Send(failSignUpPacket.Write());
+	        return;
+        }
 
-        }
-        catch (Exception e)
+        // 회원 가입을 처리하는 부분입니다.
+        AccountEntity account = new AccountEntity()
         {
-	        Console.WriteLine($"Error - fail sign up : {e.ToString()}");
-	        S_FailSignUp failPacket = new S_FailSignUp();
-	        failPacket.Reason = "회원 가입 처리 실패";
-            session.Send(failPacket.Write());
-        }
-        
- 
-        S_SuccessSignUp successSignUpPacket = new S_SuccessSignUp();
-        successSignUpPacket.Reason = "회원 가입이 완료되었습니다.";
+	        entityId = ObjectId.GenerateNewId(),
+            UID = SessionManager.instance.GenarateUID(),
+            ID = packet.ID,
+            password = packet.Password,
+            nickName = packet.Nickname,
+            accountType = EAccountType.User,
+        };
+
+        accountsCollection.InsertOne(account);
+
+
+	    S_SuccessSignUp successSignUpPacket = new S_SuccessSignUp();
+        successSignUpPacket.Message = "회원 가입이 완료되었습니다.";
         session.Send(successSignUpPacket.Write());
         
-        Console.WriteLine($"LOG - ID: {packet.ID}({packet.UserName}) was Sign Up.");
+        Console.WriteLine($"LOG - ID: {packet.ID}({packet.Nickname}) was Sign Up.");
 
     }
 
@@ -200,37 +212,40 @@ public static class ChatHandler
         ChatSession session = arg1 as ChatSession;
         C_RequestSignOut packet = arg2 as C_RequestSignOut;
 
-
-        // session이 올바른 정보를 가지고 있는지 체크합니다.
-
-        // to do
-
         // session이 유효한지 체크 후 로그아웃 처리합니다.
-        ChatSession foundSession = SessionManager.instance.Find(session.SessionId);
+        ChatSession foundSession = SessionManager.instance.Find(packet.UID);
+        if (foundSession != session)
+        {
+	        return;
+        }
 
-
-        S_UserSignOut userSignOutPacket = new S_UserSignOut();
-        userSignOutPacket.UserName = session.NickName;
 
         Server server = session.chatServer;
+        // 퇴장 메세지 브로드캐스트
+        // 임시로 세션은 현재 로그인하는 세션을 사용해서, 나중에 나은 방법 찾을 필요가 있음.
+        S_SendChat signOutMessage = new S_SendChat();
+        signOutMessage.Nickname = "Server";
+        signOutMessage.Message = $"{session.GetNickname()}님이 퇴장했습니다.";
+        server.Push(() => { server.Broadcast(session, signOutMessage.Write()); });
+
+        S_UserSignOut userSignOutPacket = new S_UserSignOut();
+        userSignOutPacket.Nickname = session.GetNickname();
+
         server.Push(() =>
         {
             server.Broadcast(session, userSignOutPacket.Write());
         });
 
-        // 클라이언트 세션을 '채팅방'에서 제거한다.
-        server.Push(() => server.Leave(session));
-        session.chatServer = null;
-
-        S_SucessSignOut successPacket = new S_SucessSignOut();
+        // 로그아웃 처리
+        S_SuccessSignOut successPacket = new S_SuccessSignOut();
         successPacket.Message = "로그아웃 되었습니다.";
         session.Send(successPacket.Write());
 
-        Console.WriteLine($"LOG - {session.NickName}({session.UserID}) was Sign Out.");
+        Console.WriteLine($"LOG - {session.GetNickname()}({session.GetUID()}) was Sign Out.");
 
-        // session의 정보도 초기화 할 것인지 고민 중
-
-        Program.Server.Leave(session);
+        // 클라이언트 세션을 '채팅방'에서 제거한다.
+        server.Push(() => { server.Leave(session);});
+        session.chatServer = null;
     }
 
     internal static void C_RequestEnterServerHandler(PacketSession arg1, IPacket arg2)

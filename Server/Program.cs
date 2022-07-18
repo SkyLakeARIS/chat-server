@@ -17,7 +17,7 @@ public static class Program
 			   Server
 		--------------------*/
     private static Listener _Listener = new Listener();
-    public static Server Server = new Server();
+    public static Server Server = new Server("main");
 
     // JobTimer를 제작하여 해당 함수를 주기적으로 호출할 것.
     static void FlushRoom()

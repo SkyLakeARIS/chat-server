@@ -181,7 +181,7 @@ class {0} : IPacket
 		{3}
 	}}
 
-	public bool Write(Span<byte> s, ref ushort count)
+	public bool Write(Span<byte> s, ref ushort count, ArraySegment<byte> segment)
 	{{
 		bool success = true;
 		{4}
@@ -256,7 +256,7 @@ count += {0}Len;";
 @"success &= BitConverter.TryWriteBytes(s.Slice(count, s.Length - count), (ushort)this.{1}s.Count);
 count += sizeof(ushort);
 foreach ({0} {1} in this.{1}s)
-	success &= {1}.Write(s, ref count);";
+	success &= {1}.Write(s, ref count, segment);";
 
     }
 }

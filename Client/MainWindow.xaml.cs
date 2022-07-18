@@ -103,7 +103,7 @@ namespace Client
 				C_RequestSignUp signUpPacket = new C_RequestSignUp();
 				signUpPacket.ID = signUpWindow.IDInputBox.Text;
 				signUpPacket.Password = signUpWindow.PWInputBox.Password;
-				signUpPacket.UserName = signUpWindow.NickNameInputBox.Text;
+				signUpPacket.Nickname = signUpWindow.NickNameInputBox.Text;
 				ChatSession.Instance.Send(signUpPacket.Write());
 			}
 		}

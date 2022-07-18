@@ -9,6 +9,11 @@ public class DatabaseManager
 
     private readonly IMongoDatabase _database;
 
+    public static readonly string AccountCollection = "accounts";
+    public static readonly string ChatServerCollection = "chatServer";
+    public static readonly string AccountManagement = "accountManagement";
+    public static readonly string UIDGenerator = "UIDGenerator";
+
     public DatabaseManager()
     {
         var client = new MongoClient("mongodb://localhost:27017");

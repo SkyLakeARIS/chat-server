@@ -7,7 +7,3 @@ namespace Server.Database
         ObjectId entityId { get; set; }
     }
 }
-
-/*--------------------
-	
- --------------------*/

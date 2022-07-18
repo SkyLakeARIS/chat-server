@@ -32,18 +32,18 @@ class PacketManager
 		_handler.Add((ushort)PacketID.S_SuccessSignIn, ChatHandler.S_SuccessSignInHandler);
 		_onRecv.Add((ushort)PacketID.S_FailSignIn, MakePacket<S_FailSignIn>);
 		_handler.Add((ushort)PacketID.S_FailSignIn, ChatHandler.S_FailSignInHandler);
-		_onRecv.Add((ushort)PacketID.S_UserSignIn, MakePacket<S_UserSignIn>);
-		_handler.Add((ushort)PacketID.S_UserSignIn, ChatHandler.S_UserSignInHandler);
-		_onRecv.Add((ushort)PacketID.S_UserSignOut, MakePacket<S_UserSignOut>);
-		_handler.Add((ushort)PacketID.S_UserSignOut, ChatHandler.S_UserSignOutHandler);
 		_onRecv.Add((ushort)PacketID.S_SuccessSignUp, MakePacket<S_SuccessSignUp>);
 		_handler.Add((ushort)PacketID.S_SuccessSignUp, ChatHandler.S_SuccessSignUpHandler);
 		_onRecv.Add((ushort)PacketID.S_FailSignUp, MakePacket<S_FailSignUp>);
 		_handler.Add((ushort)PacketID.S_FailSignUp, ChatHandler.S_FailSignUpHandler);
-		_onRecv.Add((ushort)PacketID.S_SucessSignOut, MakePacket<S_SucessSignOut>);
-		_handler.Add((ushort)PacketID.S_SucessSignOut, ChatHandler.S_SucessSignOutHandler);
+		_onRecv.Add((ushort)PacketID.S_SuccessSignOut, MakePacket<S_SuccessSignOut>);
+		_handler.Add((ushort)PacketID.S_SuccessSignOut, ChatHandler.S_SuccessSignOutHandler);
 		_onRecv.Add((ushort)PacketID.S_FailSignOut, MakePacket<S_FailSignOut>);
 		_handler.Add((ushort)PacketID.S_FailSignOut, ChatHandler.S_FailSignOutHandler);
+		_onRecv.Add((ushort)PacketID.S_UserSignIn, MakePacket<S_UserSignIn>);
+		_handler.Add((ushort)PacketID.S_UserSignIn, ChatHandler.S_UserSignInHandler);
+		_onRecv.Add((ushort)PacketID.S_UserSignOut, MakePacket<S_UserSignOut>);
+		_handler.Add((ushort)PacketID.S_UserSignOut, ChatHandler.S_UserSignOutHandler);
 		_onRecv.Add((ushort)PacketID.S_SuccessCommand, MakePacket<S_SuccessCommand>);
 		_handler.Add((ushort)PacketID.S_SuccessCommand, ChatHandler.S_SuccessCommandHandler);
 		_onRecv.Add((ushort)PacketID.S_FailCommand, MakePacket<S_FailCommand>);
@@ -54,6 +54,12 @@ class PacketManager
 		_handler.Add((ushort)PacketID.S_ExitServer, ChatHandler.S_ExitServerHandler);
 		_onRecv.Add((ushort)PacketID.S_JoinServer, MakePacket<S_JoinServer>);
 		_handler.Add((ushort)PacketID.S_JoinServer, ChatHandler.S_JoinServerHandler);
+		_onRecv.Add((ushort)PacketID.S_SuccessCreateServer, MakePacket<S_SuccessCreateServer>);
+		_handler.Add((ushort)PacketID.S_SuccessCreateServer, ChatHandler.S_SuccessCreateServerHandler);
+		_onRecv.Add((ushort)PacketID.S_FailCreateServer, MakePacket<S_FailCreateServer>);
+		_handler.Add((ushort)PacketID.S_FailCreateServer, ChatHandler.S_FailCreateServerHandler);
+		_onRecv.Add((ushort)PacketID.S_CurrentUserList, MakePacket<S_CurrentUserList>);
+		_handler.Add((ushort)PacketID.S_CurrentUserList, ChatHandler.S_CurrentUserListHandler);
 
 	}
 
