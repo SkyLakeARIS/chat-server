@@ -30,7 +30,11 @@ public static class ChatHandler
         {
             return;
         }
-        
+
+        if (string.IsNullOrWhiteSpace(packet.Message))
+        {
+	        return;
+        }
         // 중계 역할로, 클라에서 보낸 메세지를 세션 정보와 함께 채팅서버 클래스로 보내서 브로드캐스트 한다.
         // jobQueue를 사용하여 직접 호출이 아니라 델리게이트를 push하는 방식으로 변경. 즉, 함수 호출이라는 액션.
         // 주문서와 비슷한 역할을 한다.
@@ -52,8 +56,27 @@ public static class ChatHandler
 	    // SignIn 패킷 개선사항
         // 계정 정보를 UID, ID, PW, accountType, nickname 로 수정
 
+        packet.ID = packet.ID.Trim();
+        packet.ID = packet.ID.Replace(" ", "");
+        packet.Password = packet.Password.Trim();
+        packet.Password = packet.Password.Replace(" ", "");
+
+        bool isFail = false;
         // 패킷 정보를 간단하게 검사합니다.
         if (string.IsNullOrWhiteSpace(packet.ID) || string.IsNullOrWhiteSpace(packet.Password))
+        {
+	        isFail = true;
+        }
+        else if(packet.ID.Length < 4 || packet.ID.Length > 20)
+        {
+	        isFail = true;
+        }
+        else if (packet.Password.Length < 8 || packet.Password.Length > 20)
+        {
+	        isFail = true;
+        }
+
+        if (isFail)
         {
 	        S_FailSignIn failSignInPacket = new S_FailSignIn();
 	        failSignInPacket.Reason = "아이디 또는 비밀번호가 다릅니다.";
@@ -147,7 +170,19 @@ public static class ChatHandler
 
         // 패킷 정보가 올바른지 검사합니다.
         bool isFail = false;
-        if (packet.ID.Length <= 0 || packet.ID.Length >= 20 )
+
+        packet.ID = packet.ID.Trim();
+        packet.ID = packet.ID.Replace(" ", "");
+        packet.Password = packet.Password.Trim();
+        packet.Password = packet.Password.Replace(" ", "");
+        packet.Nickname = packet.Nickname.Trim();
+
+        if (string.IsNullOrWhiteSpace(packet.ID) || string.IsNullOrWhiteSpace(packet.Password) || string.IsNullOrWhiteSpace(packet.Nickname))
+        {
+	        isFail = true;
+        }
+
+        if (packet.ID.Length < 4 || packet.ID.Length > 20 )
         {
 	        isFail = true;
         }
@@ -157,16 +192,16 @@ public static class ChatHandler
 	        isFail = true;
         }
 
-        if (packet.Nickname.Length <= 0 || packet.Nickname.Length > 10)
+        if (packet.Nickname.Length < 2 || packet.Nickname.Length > 10)
         {
 	        isFail = true;
         }
-
+ 
 
         if (isFail)
         {
 	        S_FailSignUp failSignUpPacket = new S_FailSignUp();
-	        failSignUpPacket.Reason = "회원 가입 처리 실패 : 올바르지 않은 정보입니다.";
+	        failSignUpPacket.Reason = "회원 가입 실패 : 올바르지 않은 정보입니다.";
 	        session.Send(failSignUpPacket.Write());
 	        return;
         }
@@ -203,7 +238,7 @@ public static class ChatHandler
         successSignUpPacket.Message = "회원 가입이 완료되었습니다.";
         session.Send(successSignUpPacket.Write());
         
-        Console.WriteLine($"LOG - ID: {packet.ID}({packet.Nickname}) was Sign Up.");
+        Console.WriteLine($"LOG - ID: {packet.ID}({account.UID}) was Sign Up.");
 
     }
 

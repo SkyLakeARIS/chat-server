@@ -61,6 +61,15 @@ public class ChatSession : PacketSession
             // 이유는 onDisconnect는 접속이 끊기면 바로 실행되는데, JobQueue는 상대적으로 미래에 실행되기 때문이다.
             // 즉, onDisconnect에서 server(채팅방)을 null로 밀어버려서 나중에 action이 실행될 때 null참조가 된다.
             Server server = chatServer;
+            // 클라이언트가 프로그램을 강제로 종료할 때 접속자들에게 그 사실을 알립니다.
+            S_SendChat signOutMessage = new S_SendChat();
+            signOutMessage.Nickname = "Server";
+            signOutMessage.Message = $"{_Nickname}님이 퇴장했습니다.";
+            server.Push(() => { server.Broadcast(this, signOutMessage.Write()); });
+
+            S_UserSignOut signOutPacket = new S_UserSignOut();
+            signOutPacket.Nickname = _Nickname;
+            server.Push(() => {server.Broadcast(this, signOutPacket.Write());});
             server.Push(() => server.Leave(this) );
             chatServer = null;
         }

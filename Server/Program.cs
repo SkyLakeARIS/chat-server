@@ -33,7 +33,7 @@ public static class Program
     {
         // 패킷 매니저 초기화.
         // 패킷들의 딕셔너리 초기화 및 델리게이트 연결.
-       // PacketManager.Instance.Register();
+        // PacketManager.Instance.Register();
 
         // 세팅은 되어 있으니 내일(06.24) 원격으로 db 켜보고 아래 명령어 대로 적용 해보기.
         // 그리고 db 테이블 설계하기
@@ -60,26 +60,29 @@ public static class Program
         //collection.InsertOne(account);
         //IFindFluent<AccountEntity, AccountEntity> find = collection.Find(x => x.ID.Contains(""));
         //var list = find.ToList();
-        
+
         //foreach(AccountEntity user in list)
         //{
         //    Console.WriteLine($"uid: {{{user.Id}}}, id : {user.ID}, nickname : {user.nickName}, type : {user.accountType}");
         //}
         //Thread.Sleep(10000);
         //IFindFluent<AccountEntity, AccountEntity> account = collection.Find(){ "ID" : id};
-        
+
         //IFindFluent<AccountEntity, Acc account = collection.Find(x => x.UserName.Contains("t")).ToList();
         //var newAccount = account[0] with { nickName = "tttt" };
         //var filter = Builders<AccountEntity>.Filter.Eq(x => x.Id, newAccount.Id);
         //collection.ReplaceOne(filter, newAccount);
 
-        var host = Dns.GetHostName();
-        // 도메인을 통해서 아이피를 가져와 주는 역할
-        var ipHost = Dns.GetHostEntry(host);
+		//IPAddress.Parse("106.241.146.247");
+        //var host = ;
+        // 도메인을 통해서 아이피를 가져와 주는 역할  host
+        //var ipHost = Dns.GetHostName();
         // 큰 서버의 경우 한 도메인에 여러 아이피를 가지고 있을 수 있음.
-        var ip = ipHost.AddressList[0];
+        //var host = Dns.GetHostEntry(ipHost);
+        //IPAddress ip = host.AddressList[1];
+        IPAddress ip = IPAddress.Parse("192.168.0.15");
         // 목적지를 설정하는 부분, 최종 주소
-        var endPoint = new IPEndPoint(ip, 9999);
+        IPEndPoint endPoint = new IPEndPoint(ip, 18017);
 
 
         // 델리게이트에 추가하기 위해서 OnAcceptHandler()를 전달함.

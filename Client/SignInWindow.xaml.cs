@@ -26,28 +26,42 @@ namespace Client
 
         private void SignInOK_Clicked(object sender, RoutedEventArgs e)
         {
+	        IDInputBox.Text = IDInputBox.Text.Trim();
+	        IDInputBox.Text = IDInputBox.Text.Replace(" ", "");
+			PWInputBox.Password = PWInputBox.Password.Trim();
+			PWInputBox.Password = PWInputBox.Password.Replace(" ", "");
 
-			if (IDInputBox.Text.Length <= 0 || PWInputBox.Password.Length <= 0)
+			// id
+			if (string.IsNullOrWhiteSpace(IDInputBox.Text))
 	        {
-				DisplayMessage.Text = "아이디나 비밀번호를 입력하세요.";
-		        DisplayMessage.Foreground = Brushes.Red;
-		        return;
-			}
-
-			if (IDInputBox.Text.Length >= 20 )
-	        {
-		        DisplayMessage.Text = "아이디가 너무 깁니다.";
-		        DisplayMessage.Foreground = Brushes.Red;
-		        return;
-	        }
-			if (PWInputBox.Password.Length < 8 || PWInputBox.Password.Length > 20)
-	        {
-		        DisplayMessage.Text = "패스워드는 8이상 20이하";
+		        DisplayMessage.Text = "아이디를 입력하세요.";
 		        DisplayMessage.Foreground = Brushes.Red;
 		        return;
 	        }
 
-			this.DialogResult = true;
+			if (IDInputBox.Text.Length < 4 || IDInputBox.Text.Length > 20)
+	        {
+		        DisplayMessage.Text = "아이디 또는 비밀번호가 다릅니다.";
+		        DisplayMessage.Foreground = Brushes.Red;
+		        return;
+	        }
+
+			// password
+	        if (string.IsNullOrWhiteSpace(PWInputBox.Password))
+	        {
+		        DisplayMessage.Text = "비밀번호를 입력하세요.";
+		        DisplayMessage.Foreground = Brushes.Red;
+		        return;
+	        }
+
+	        if (PWInputBox.Password.Length < 8 || PWInputBox.Password.Length > 20)
+	        {
+		        DisplayMessage.Text = "아이디 또는 비밀번호가 다릅니다.";
+		        DisplayMessage.Foreground = Brushes.Red;
+		        return;
+	        }
+
+	        this.DialogResult = true;
         }
     }
 }

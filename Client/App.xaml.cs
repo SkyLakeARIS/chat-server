@@ -18,11 +18,14 @@ namespace Client
 	    public Connector connector;
 	    public void ConnectServer()
 	    {
-		    var host = Dns.GetHostName();
-		    var ipHost = Dns.GetHostEntry(host);
-		    var ip = ipHost.AddressList[0];
-		    // 목적지
-		    var endPoint = new IPEndPoint(ip, 9999);
+		    //var host = Dns.GetHostName();
+			// 192.168.0.15 
+			//var ipHost = Dns.GetHostEntry();
+		    //var ip = ipHost.AddressList[0];
+		    IPAddress ip = IPAddress.Parse("106.241.146.247");
+			//    192.168.0.15
+			// 목적지
+			var endPoint = new IPEndPoint(ip, 18017);
 
 		    connector = new Connector();
 		    connector.Connect(endPoint, () => { return SessionManager.Instance.Generate(); });
