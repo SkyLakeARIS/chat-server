@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net;
 
 namespace Client.Network;
 
@@ -6,8 +7,8 @@ public static class Configuration
 {
 	private static string Path = "config.txt";
 
-	public static string PublicIP="not init";
-	public static string PrivateIP="not init";
+	public static IPAddress PublicIP = null;
+	public static IPAddress PrivateIP = null;
 	public static int Port;
 	public static bool Load()
 	{
@@ -30,12 +31,11 @@ public static class Configuration
 
 			if (info[0].Equals("PublicIP"))
 			{
-				PublicIP = info[1];
+				PublicIP = IPAddress.Parse(info[1]);
 			}
 			else if (info[0].Equals("PrivateIP"))
 			{
-				PrivateIP = info[1];
-
+				PrivateIP = IPAddress.Parse(info[1]);
 			}
 			else if (info[0].Equals("Port"))
 			{

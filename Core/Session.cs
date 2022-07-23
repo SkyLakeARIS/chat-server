@@ -99,6 +99,19 @@ public abstract class Session
         // 접속한 클라이언트 소켓.
         _socket = socket;
 
+        // 강제 종료 이외의 상황에서 네트워크 끊김을 감지하여 소켓 연결을 해제 해준다.
+        int size = sizeof(UInt32);
+        UInt32 on = 1;
+        UInt32 keepAliveInterval = 10000;   // Send a packet once every 10 seconds.
+        UInt32 retryInterval = 1000;        // If no response, resend every second.
+        byte[] inArray = new byte[size * 3];
+        Array.Copy(BitConverter.GetBytes(on), 0, inArray, 0, size);
+        Array.Copy(BitConverter.GetBytes(keepAliveInterval), 0, inArray, size, size);
+        Array.Copy(BitConverter.GetBytes(retryInterval), 0, inArray, size * 2, size);
+
+        _socket.IOControl(IOControlCode.KeepAliveValues, inArray, null);
+
+
         // listener와 동일하게 비동기로 처리
         _recvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnRecvCompleted);
         // recvArgs.Completed += OnRecvCompleted; 같은 코드
