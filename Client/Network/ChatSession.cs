@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Net;
+using System.Windows;
+using System.Windows.Media;
 using Core;
 using Core.Packet;
 
@@ -34,7 +36,28 @@ namespace Client.Network
 
         public override void OnDisconnected(EndPoint endPoint)
         {
-            Console.WriteLine($"Disconnected {endPoint}");
+            Application.Current.Dispatcher.Invoke(() =>
+            {
+                // 현재 윈도우를 분리 후, 새로 열 윈도우로 교체한 다음 기존 윈도우를 닫고 새 윈도우를 연다.
+                ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
+
+                Application.Current.MainWindow = new MainWindow();
+                Application.Current.MainWindow.Show();
+                chatWindow.Close();
+
+                MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
+                mainWindow.StateBlock.Text = "서버와 접속이 끊어졌습니다.";
+                mainWindow.StateBlock.Foreground = Brushes.Red;
+            });
+
+            //Application.Current.Dispatcher.Invoke(() =>
+            //{
+            //    // 현재 윈도우를 분리 후, 새로 열 윈도우로 교체한 다음 기존 윈도우를 닫고 새 윈도우를 연다.
+            //    ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
+            //    chatWindow.ChatBox.Text = "서버와 연결이 끊겼습니다.";
+            //    chatWindow.ChatBox.Foreground = Brushes.Red;
+
+            //});
         }
     }
 }

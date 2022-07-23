@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,13 +15,29 @@ namespace Core
         private Func<Session> _sessionFactory;
         public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory, int count =1)
         {
+            
+            // 더미 모드 코드 없애기
             for (int i = 0; i < count; i++) // dummy mode 
             {
                 var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+                // recv, send 타임 아웃 설정하기
+                //socket.ReceiveTimeout = 5000;
+                //socket.SendTimeout = 5000;
+
+                // keepalive로 하부단에서 주기적으로 통신하여 상대가 응답을 하는지를 체크한다.
+                int size = sizeof(UInt32);
+                UInt32 on = 1;
+                UInt32 keepAliveInterval = 10000;   // Send a packet once every 10 seconds.
+                UInt32 retryInterval = 1000;        // If no response, resend every second.
+                byte[] inArray = new byte[size * 3];
+                Array.Copy(BitConverter.GetBytes(on), 0, inArray, 0, size);
+                Array.Copy(BitConverter.GetBytes(keepAliveInterval), 0, inArray, size, size);
+                Array.Copy(BitConverter.GetBytes(retryInterval), 0, inArray, size * 2, size);
+
+                socket.IOControl(IOControlCode.KeepAliveValues, inArray, null);
+
                 _sessionFactory = sessionFactory;
-
                 var args = new SocketAsyncEventArgs();
-
                 args.Completed += OnConnectCompleted;
                 args.RemoteEndPoint = endPoint;
                 // 일종의 식별자
@@ -42,6 +59,7 @@ namespace Core
             {
                 return;
             }
+            
             var pending = socket.ConnectAsync(args);
             if (!pending)
             {
@@ -60,7 +78,6 @@ namespace Core
                 // Register 를 다시 호출하지 않는 이유는
                 // 클라이언트가 접속할때 쓰는거라서 
                 // 굳이 session이나 listener처럼 비동기 루프를 할 이유가 없다.
-
             }
             else
             {

@@ -80,9 +80,14 @@ public static class Program
         // 큰 서버의 경우 한 도메인에 여러 아이피를 가지고 있을 수 있음.
         //var host = Dns.GetHostEntry(ipHost);
         //IPAddress ip = host.AddressList[1];
-        IPAddress ip = IPAddress.Parse("192.168.0.15");
-        // 목적지를 설정하는 부분, 최종 주소
-        IPEndPoint endPoint = new IPEndPoint(ip, 18017);
+        if (!Configuration.Load())
+        {
+	        Console.WriteLine("fail to load config information");
+	        return;
+        }
+        IPAddress ip = IPAddress.Parse(Configuration.PrivateIP);
+        // 목적지를 설정하는 부분, 최종 주소  "192.168.0.15"  18017
+        IPEndPoint endPoint = new IPEndPoint(ip, Configuration.Port);
 
 
         // 델리게이트에 추가하기 위해서 OnAcceptHandler()를 전달함.

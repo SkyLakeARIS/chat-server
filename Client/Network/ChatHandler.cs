@@ -1,6 +1,7 @@
 ﻿using Core;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Documents;
@@ -19,7 +20,7 @@ public static class ChatHandler
         // 세션 정보에 서버로부터 받은 유저정보를 초기화 합니다.
         ChatSession.Instance._NickName = packet.Nickname;
         ChatSession.Instance._UID = packet.UID;
-
+        
         Application.Current.Dispatcher.Invoke(() =>
         {
             // 로그인이 성공적으로 되었으므로

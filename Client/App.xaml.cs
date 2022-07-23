@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Net;
-using System.Threading.Tasks;
+﻿using System.Net;
 using System.Windows;
+using System.Windows.Media;
+using Client.Network;
 using Core;
 
 namespace Client
@@ -18,14 +14,16 @@ namespace Client
 	    public Connector connector;
 	    public void ConnectServer()
 	    {
-		    //var host = Dns.GetHostName();
-			// 192.168.0.15 
-			//var ipHost = Dns.GetHostEntry();
-		    //var ip = ipHost.AddressList[0];
-		    IPAddress ip = IPAddress.Parse("106.241.146.247");
+		    if (!Configuration.Load())
+		    {
+			    return;
+		    }
+
+		    IPAddress ip = IPAddress.Parse(Configuration.PublicIP);
+			// "106.241.146.247"
 			//    192.168.0.15
-			// 목적지
-			var endPoint = new IPEndPoint(ip, 18017);
+			// 목적지    18017
+			var endPoint = new IPEndPoint(ip, Configuration.Port);
 
 		    connector = new Connector();
 		    connector.Connect(endPoint, () => { return SessionManager.Instance.Generate(); });
@@ -39,3 +37,22 @@ namespace Client
 	    }
     }
 }
+
+/*
+            else if (args.SocketError == SocketError.NotConnected)
+            {
+	            _ConnectFailCount++;
+	            // Connect 메서드 바깥에서 연결 성공 여부를 체크하고 하도록.
+	            // 클라가 서버와 같은 네트워크에 존재할 때
+	            if (_ConnectFailCount > 50)
+	            {
+		            IPAddress internalIP = IPAddress.Parse("192.168.0.15");
+		            // 목적지   18017
+		            IPEndPoint endPoint = new IPEndPoint(internalIP, 8080);
+		            args.UserToken = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+		            args.RemoteEndPoint = endPoint;
+		            //args.Completed += OnConnectCompleted;
+	            }
+		          RegisterConnect(args);
+
+ */

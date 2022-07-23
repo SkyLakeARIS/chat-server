@@ -64,7 +64,7 @@ namespace Client
 			//	// 예로 이동패킷 같은 경우는 초에 4번 보내도록 되어있기도 하므로 따라함.
 			//	Thread.Sleep(250);
 			//}
-			StateBlock.Text = "asdsad";
+			StateBlock.Text = "";
 			StateBlock.Foreground = Brushes.Red;
 		}
 
@@ -80,6 +80,7 @@ namespace Client
 				signInPacket.ID = signInWindow.IDInputBox.Text;
 				signInPacket.Password = signInWindow.PWInputBox.Password;
 				ChatSession.Instance.Send(signInPacket.Write());
+
 			}
 			
 			//TextBox textBox = new TextBox();
