@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Specialized;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 using Client.Network;
 
 namespace Client
@@ -105,14 +96,10 @@ namespace Client
         {
 			ChatDataModel chatDataModel = new ChatDataModel(nickName, chatMessage);
 
-			//ChatListView.Items.Add(chatDataModel);
-
 			_chatList.Add(chatDataModel);
 
 			ChatListView.Items.Refresh();
 
-			//ChatListView.SelectedIndex = ChatListView.Items.Count - 1;
-			//ChatListView.ScrollIntoView(ChatListView.SelectedItem);
 
 			if (VisualTreeHelper.GetChildrenCount(ChatListView) > 0)
 			{
@@ -121,15 +108,6 @@ namespace Client
 				scrollViewer.ScrollToBottom();
 			}
 
-			//ChatListView.ItemsSource = _chatList;
-			//ChatListView.Items.Refresh();
-
-			//if (VisualTreeHelper.GetChildrenCount(ChatListView) > 0) 
-			//   {
-			//    Border border = (Border)VisualTreeHelper.GetChild(ChatListView, 0);
-			//    ScrollViewer scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
-			//       scrollViewer.ScrollToBottom();
-			//   }
 		}
 
 		public void AddCurrentUserList(string nickname)
@@ -138,15 +116,6 @@ namespace Client
 			_userDataModel.Add(user);
 			UserListBox.Items.Refresh();
 
-			//ChatListView.ItemsSource = _chatList;
-			//ChatListView.Items.Refresh();
-
-			//if (VisualTreeHelper.GetChildrenCount(ChatListView) > 0) 
-			//   {
-			//    Border border = (Border)VisualTreeHelper.GetChild(ChatListView, 0);
-			//    ScrollViewer scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
-			//       scrollViewer.ScrollToBottom();
-			//   }
 		}
 
 		public void AddCurrentUserList(List<UserDataModel> nicknameList)
@@ -161,17 +130,7 @@ namespace Client
 
 			_userDataModel.Remove(user);
 			UserListBox.Items.Refresh();
-
-			//ChatListView.ItemsSource = _chatList;
-			//ChatListView.Items.Refresh();
-
-			//if (VisualTreeHelper.GetChildrenCount(ChatListView) > 0) 
-			//   {
-			//    Border border = (Border)VisualTreeHelper.GetChild(ChatListView, 0);
-			//    ScrollViewer scrollViewer = VisualTreeHelper.GetChild(border, 0) as ScrollViewer;
-			//       scrollViewer.ScrollToBottom();
-			//   }
-		}
+        }
 
 	}
 }

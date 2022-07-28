@@ -1,11 +1,5 @@
 ﻿using System.Net;
-using System.Net.Sockets;
-using System.Text;
 using Core;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using Server.Database;
-using Server.Database.Entities;
 using Server.Network;
 
 namespace Server;
@@ -31,62 +25,14 @@ public static class Program
     }
     private static void Main(string[] args)
     {
-        // 패킷 매니저 초기화.
-        // 패킷들의 딕셔너리 초기화 및 델리게이트 연결.
-        // PacketManager.Instance.Register();
 
-        // 세팅은 되어 있으니 내일(06.24) 원격으로 db 켜보고 아래 명령어 대로 적용 해보기.
-        // 그리고 db 테이블 설계하기
-        // 패킷 핸들러에서 처리하는 방법은 종욱이 프로젝트 참고.
-        //DatabaseManager instance = DatabaseManager.Instance;
-        //IMongoCollection<AccountEntity> collection = instance.GetCollection<AccountEntity>("account");
-        //Console.WriteLine("ID 입력: ");
-        //string id = Console.ReadLine();
-        //Console.WriteLine("pw 입력: ");
-        //string pw = Console.ReadLine();
-        //Console.WriteLine("nickname 입력: ");
-        //string nickname = Console.ReadLine();
-
-        ////var instance = DatabaseManager.Instance;
-        ////var collection = instance.GetCollection<AccountEntity>("accounts");
-        //AccountEntity account = new AccountEntity()
-        //{
-        //    Id = ObjectId.GenerateNewId(),
-        //    ID = id,
-        //    password = pw,
-        //    nickName = nickname,
-        //    accountType = EAccountType.User,
-        //};
-        //collection.InsertOne(account);
-        //IFindFluent<AccountEntity, AccountEntity> find = collection.Find(x => x.ID.Contains(""));
-        //var list = find.ToList();
-
-        //foreach(AccountEntity user in list)
-        //{
-        //    Console.WriteLine($"uid: {{{user.Id}}}, id : {user.ID}, nickname : {user.nickName}, type : {user.accountType}");
-        //}
-        //Thread.Sleep(10000);
-        //IFindFluent<AccountEntity, AccountEntity> account = collection.Find(){ "ID" : id};
-
-        //IFindFluent<AccountEntity, Acc account = collection.Find(x => x.UserName.Contains("t")).ToList();
-        //var newAccount = account[0] with { nickName = "tttt" };
-        //var filter = Builders<AccountEntity>.Filter.Eq(x => x.Id, newAccount.Id);
-        //collection.ReplaceOne(filter, newAccount);
-
-		//IPAddress.Parse("106.241.146.247");
-        //var host = ;
-        // 도메인을 통해서 아이피를 가져와 주는 역할  host
-        //var ipHost = Dns.GetHostName();
-        // 큰 서버의 경우 한 도메인에 여러 아이피를 가지고 있을 수 있음.
-        //var host = Dns.GetHostEntry(ipHost);
-        //IPAddress ip = host.AddressList[1];
         if (!Configuration.Load())
         {
 	        Console.WriteLine("fail to load config information");
 	        return;
         }
+
         IPAddress ip = IPAddress.Parse(Configuration.PrivateIP);
-        // 목적지를 설정하는 부분, 최종 주소  "192.168.0.15"  18017
         IPEndPoint endPoint = new IPEndPoint(ip, Configuration.Port);
 
 
@@ -106,43 +52,5 @@ public static class Program
             // 작성하면 코드가 간편해진다.
             JobTimer.Instance.Flush();
         }
-    }
-}
-
-
-// 코드 참고용으로 삭제 안함.
-public class GameSession : PacketSession
-{
-    public override void OnConnected(EndPoint endPoint)
-    {
-        Console.WriteLine($"Connected {endPoint}");
-
-        Thread.Sleep(5000);
-        Disconnect();
-    }
-
-    //public override int OnReceived(ArraySegment<byte> buffer)
-    //{
-    //    // args에 Buffer(내용물), Offset이 다 들어있음.
-    //    var text = Encoding.UTF8.GetString(buffer.Array, buffer.Offset, buffer.Count);
-    //    Console.WriteLine("[client]" + text);
-    //    return buffer.Count;
-    //}
-    public override void OnReceivePacket(ArraySegment<byte> buffer)
-    {
-        ushort size = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
-        ushort id = BitConverter.ToUInt16(buffer.Array, buffer.Offset + 2);
-        Console.WriteLine($"RecvPacketID {id}, size : {size}");
-    }
-
-
-    public override void OnSend(int numOfBytes)
-    {
-        Console.WriteLine($"보낸 바이트: {numOfBytes}");
-    }
-
-    public override void OnDisconnected(EndPoint endPoint)
-    {
-        Console.WriteLine($"Disconnected {endPoint}");
     }
 }

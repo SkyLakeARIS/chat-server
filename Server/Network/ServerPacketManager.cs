@@ -1,7 +1,5 @@
 using Core;
-using System;
 using Server.Network;
-using System.Collections.Generic;
 
 class PacketManager
 {

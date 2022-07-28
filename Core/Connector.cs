@@ -1,34 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.NetworkInformation;
+﻿using System.Net;
 using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
-using System.Timers;
+
 
 namespace Core
 {
     public class Connector
     {
-
-        // 리스너와 유사하게
+	    // 리스너와 유사하게
         private Func<Session> _sessionFactory;
-        private SocketAsyncEventArgs args;
-        public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory, int count =1)
-        {
+        private SocketAsyncEventArgs args = new SocketAsyncEventArgs();
 
-            var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
-            // recv, send 타임 아웃 설정하기
-            //socket.ReceiveTimeout = 5000;
-            //socket.SendTimeout = 5000;
+        public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory)
+        {
+	        var socket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             // keepalive로 하부단에서 주기적으로 통신하여 상대가 응답을 하는지를 체크한다.
             int size = sizeof(UInt32);
             UInt32 on = 1;
-            UInt32 keepAliveInterval = 10000;   // Send a packet once every 10 seconds.
-            UInt32 retryInterval = 1000;        // If no response, resend every second.
+            UInt32 keepAliveInterval = 10000;
+            UInt32 retryInterval = 1000;
             byte[] inArray = new byte[size * 3];
             Array.Copy(BitConverter.GetBytes(on), 0, inArray, 0, size);
             Array.Copy(BitConverter.GetBytes(keepAliveInterval), 0, inArray, size, size);
@@ -37,13 +27,10 @@ namespace Core
             socket.IOControl(IOControlCode.KeepAliveValues, inArray, null);
 
             _sessionFactory = sessionFactory;
-            args = new SocketAsyncEventArgs();
+
             args.Completed += OnConnectCompleted;
             args.RemoteEndPoint = endPoint;
-            // 일종의 식별자
-            // 이렇게 하는것도 한가지 방법.
-            // 1. socket을 멤버 변수로 2. 매개변수로 넘기기 3. args의 UserToken이용
-            // 1번의 경우 한번만 하는것이 아니라 여러개의 소켓을 연결해주므로 3번을 사용한다고 함.
+
             args.UserToken = socket;
 
             // 비동기 루프 시작
@@ -82,11 +69,6 @@ namespace Core
             {
                 Console.WriteLine($"OnConnectCompleted error : {args.SocketError}");
             }
-        }
-
-        public void CancelConnect()
-        {
-            ((Socket)args.UserToken).Dispose();
         }
     }
 }

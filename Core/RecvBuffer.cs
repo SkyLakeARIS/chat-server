@@ -41,7 +41,6 @@ public class RecvBuffer
 
     }
 
-
     // 현재 방식은 순환식이 아니므로, 주기적으로 커서를 앞으로 당겨줘야 계속해서 사용이 가능하다.
     public void Clear()
     {

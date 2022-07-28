@@ -1,12 +1,9 @@
 ﻿using Core;
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows;
-using System.Windows.Documents;
 using System.Windows.Media;
-using System.Windows.Threading;
 
 namespace Client.Network;
 
@@ -144,24 +141,12 @@ public static class ChatHandler
     {
         S_SendChat packet = arg2 as S_SendChat;
 
-        //string chatMessage = $"{packet.Nickname} : {packet.Message}";
-
-
         Application.Current.Dispatcher.Invoke(() =>
 	        {
 		        ChatWindow chatWindow = Application.Current.MainWindow as ChatWindow;
 		        chatWindow.RefreshChatListView(packet.Nickname, packet.Message);
 	        }
         );
-
-        //Console.SetCursorPosition(session.x, session.y);
-        //session.y++;
-        //if(packet.Nickname == "1")
-        {
-
-            //string message = $"[{packet.Nickname}] | {packet.Message}";
-            //Console.WriteLine(message);
-        }
     }
 
     internal static void S_ExitServerHandler(PacketSession arg1, IPacket arg2)

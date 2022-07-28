@@ -85,6 +85,8 @@ class PacketManager
 		//// 클라에서 보낸 패킷 타입에 맞게 받아서
 		//// 역직렬화 시킨 후에 패킷 타입에 맞는 함수를 콜백함.
 		//// 애초에 콜백을 하려면 여기에서 패킷을 역직렬화 할 수 밖에 없음.
+		// T는 MakePacket 메서드가 _onRecv(딕셔너리)의 값으로 지정되어있는 타입이므로(MakePacket<~~>)
+		// 그 타입(~~부분)에 맞는 형으로 할당함.
 		T pkt = new T();
 		pkt.Read(buffer);
 		Action<PacketSession, IPacket> action = null;

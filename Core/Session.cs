@@ -9,41 +9,29 @@ namespace Core;
 
 public abstract class PacketSession : Session
 {
-    // study log code
-    // 서버에서 패킷을 모아 보낼 때 클라에서 몇개를 수신하는지 체크.
-    //int _packetCount = 0;
-
-    // sealed란?
-    // 이 클래스를 다시 상속받아서 이 함수를 오버라이드하려고 하면
-    // 하지 못하도록 오류를 발생시켜줌(컴파일오류)
-    // 여기서 목적은 OnReceivePacket함수로 대체하기 위해서이다.
-    public sealed override int OnReceived(ArraySegment<byte> buffer)
+	public sealed override int OnReceived(ArraySegment<byte> buffer)
     {
         var proccessLen = 0;
         while (true)
         {
-            // 패킷 길이 + 패킷타입 헤더 체크
+            // 패킷의 크기(헤더)를 읽을 수 있을 만큼의 바이트가 도착했는지 검사. 
+            // 패킷의 크기는 short형으로 사용.
             if (buffer.Count < 2)
             {
                 break;
             }
 
-            // 패킷이 완전체로 도착했는지 확인
-            // 헤더를 볼 수 있으니, 헤더 정보를 봐서 패킷의 크기를 읽어오는 부분.
-            // 아마 이 함수는 UINT16만큼만 읽는 듯(size타입이 ushort 2bytes)
+            // 패킷의 사이즈를 알 수 있으므로 패킷이 완전체로 도착했는지 확인
             var dataSize = BitConverter.ToUInt16(buffer.Array, buffer.Offset);
             if (buffer.Count < dataSize) // 그래서 버퍼에 온 데이터와 패킷의 총 크기를 비교함.
             {
                 break;
             }
 
-            // 이부분은 패킷을 어떻게든 조립할 수 있는 부분이 됨.
-            // 패킷 한 덩어리 부분을 넘겨주는 부분
-            // arratsegment는 구조체라 스택에 생성(new가 동적아님)
+			// 여기까지 오면 패킷을 파싱할 수 있음.
+			// 패킷의 id에 따른 핸들링을 한다.
+            // arraysegment는 구조체라 스택에 생성(new가 동적아님)
             OnReceivePacket(new ArraySegment<byte>(buffer.Array, buffer.Offset, dataSize));
-
-            // study log code
-            //_packetCount++;
 
             proccessLen += dataSize;
 
@@ -52,12 +40,6 @@ public abstract class PacketSession : Session
             buffer = new ArraySegment<byte>(buffer.Array, buffer.Offset + dataSize, buffer.Count - dataSize);
         }
 
-        // study log code
-        //if(_packetCount > 1)
-        //{
-        //    Console.WriteLine($"packet recv : {_packetCount}");
-        //}
-        //_packetCount = 0;
         return proccessLen;
     }
 
@@ -67,7 +49,7 @@ public abstract class PacketSession : Session
 
 public abstract class Session
 {
-    private Socket _socket;
+    protected Socket _socket;
     private int _disconnected = 0; // lock
 
     private SocketAsyncEventArgs _recvArgs = new SocketAsyncEventArgs();
@@ -99,27 +81,8 @@ public abstract class Session
         // 접속한 클라이언트 소켓.
         _socket = socket;
 
-        // 강제 종료 이외의 상황에서 네트워크 끊김을 감지하여 소켓 연결을 해제 해준다.
-        int size = sizeof(UInt32);
-        UInt32 on = 1;
-        UInt32 keepAliveInterval = 10000;   // Send a packet once every 10 seconds.
-        UInt32 retryInterval = 1000;        // If no response, resend every second.
-        byte[] inArray = new byte[size * 3];
-        Array.Copy(BitConverter.GetBytes(on), 0, inArray, 0, size);
-        Array.Copy(BitConverter.GetBytes(keepAliveInterval), 0, inArray, size, size);
-        Array.Copy(BitConverter.GetBytes(retryInterval), 0, inArray, size * 2, size);
-
-        _socket.IOControl(IOControlCode.KeepAliveValues, inArray, null);
-
-
         // listener와 동일하게 비동기로 처리
         _recvArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnRecvCompleted);
-        // recvArgs.Completed += OnRecvCompleted; 같은 코드
-
-        //// 동기 방식에서 recvBuffer 만든것과 동일하게 데이터를 받을 버퍼를 설정해 줌.
-        //_recvArgs.SetBuffer(new byte[1024], 0, 1024);
-
-
         _sendArgs.Completed += new EventHandler<SocketAsyncEventArgs>(OnSendCompleted);
 
         // Receive 흐름은 Listener와 같음

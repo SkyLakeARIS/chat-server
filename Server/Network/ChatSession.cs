@@ -1,11 +1,7 @@
 ﻿using System.Net;
-using System.Reflection.PortableExecutable;
-using System.Text;
 using Core;
-using Core.Packet;
 
 namespace Server.Network;
-
 
 public class ChatSession : PacketSession
 {
@@ -38,15 +34,7 @@ public class ChatSession : PacketSession
 
     public override void OnConnected(EndPoint endPoint)
     {
-        Console.WriteLine($"{endPoint}가 접속함.");
-
-        // 임시로 채팅 서버에 강제로 입장.
-        //_Nickname = SessionId.ToString();
-        //Server server = chatServer;
-        // server.Push(() => server.Enter(this));
-        //chatServer = Program.Server;
-        //Program.Server.Enter(this);
-
+        Console.WriteLine($"{endPoint}가 접속했습니다.");
     }
 
     public override void OnDisconnected(EndPoint endPoint)
