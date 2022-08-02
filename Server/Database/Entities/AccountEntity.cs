@@ -1,19 +1,15 @@
-﻿using MongoDB.Bson;
+﻿using AccountType;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Server.Database.Entities;
 
-public enum EAccountType : byte
-{
-    User,
-    Host,
-    Admin
-}
 
 public sealed record AccountEntity : IMongoEntity
 {
     [BsonId]
     public ObjectId entityId { get; set; }
+
     public long UID { get; init; }
 
     public string ID { get; init; }
@@ -22,5 +18,8 @@ public sealed record AccountEntity : IMongoEntity
 
     public string nickName { get; init; }
 
-    public EAccountType accountType { get; init; }
+    public List<long> joinedServerList { get; init; }
+
+    public List<EAccountType> accountTypeList { get; init; }
+
 }
