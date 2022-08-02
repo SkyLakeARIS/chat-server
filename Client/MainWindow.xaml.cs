@@ -10,10 +10,6 @@ namespace Client
 	/// </summary>
 	public partial class MainWindow : Window
 	{
-		private static double ConnectionTimeLimit = 5000;
-		// 서버 연결시에 제한시간을 담당하는 타이머입니다.
-		private System.Timers.Timer _ConnectionTimer = null;
-		private int count = 1;
 		public MainWindow()
 		{
 			InitializeComponent();
@@ -32,7 +28,6 @@ namespace Client
 
 			}
         }
-
 		private void OnSignUpButton(object sender, RoutedEventArgs e)
 		{
 			SignUpWindow signUpWindow = new SignUpWindow();
@@ -45,30 +40,15 @@ namespace Client
 				ChatSession.Instance.Send(signUpPacket.Write());
 			}
 		}
-
 		private void OnExitProgram(object sender, RoutedEventArgs e)
 		{
 			Close();
 		}
-
 		public void MainPage(string username)
 		{
 
 			StateBlock.Text = $"{username} 환영합니다.";
 			StateBlock.Foreground = Brushes.Green;
-		}
-
-		private void TimerEvent(object sender, EventArgs e)
-		{
-			count++;
-			Application.Current.Dispatcher.Invoke(() =>
-			{
-
-				MainWindow mainWindow = Application.Current.MainWindow as MainWindow;
-
-				StateBlock.Text = $"count : {count.ToString()}";
-				StateBlock.Foreground = Brushes.Red;
-			});
 		}
 
 	}

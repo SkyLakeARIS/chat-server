@@ -8,7 +8,7 @@ namespace Core
     {
 	    // 리스너와 유사하게
         private Func<Session> _sessionFactory;
-        private SocketAsyncEventArgs args = new SocketAsyncEventArgs();
+        private SocketAsyncEventArgs _args = new SocketAsyncEventArgs();
 
         public void Connect(IPEndPoint endPoint, Func<Session> sessionFactory)
         {
@@ -28,13 +28,13 @@ namespace Core
 
             _sessionFactory = sessionFactory;
 
-            args.Completed += OnConnectCompleted;
-            args.RemoteEndPoint = endPoint;
+            _args.Completed += OnConnectCompleted;
+            _args.RemoteEndPoint = endPoint;
 
-            args.UserToken = socket;
+            _args.UserToken = socket;
 
             // 비동기 루프 시작
-            RegisterConnect(args);
+            RegisterConnect(_args);
         }
 
         private void RegisterConnect(SocketAsyncEventArgs args)

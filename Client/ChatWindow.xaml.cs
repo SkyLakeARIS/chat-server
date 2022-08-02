@@ -87,7 +87,7 @@ namespace Client
         private void OnSignOutButton(object sender, RoutedEventArgs e)
         {
 	        C_RequestSignOut packet = new C_RequestSignOut();
-	        packet.UID = ChatSession.Instance._UID;
+	        packet.UID = ChatSession.Instance.GetUID();
 
 			ChatSession.Instance.Send(packet.Write());
 		}

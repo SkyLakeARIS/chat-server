@@ -12,7 +12,7 @@ namespace Client
     /// </summary>
     public partial class App : Application
     {
-	    public Connector Connector = null;
+	    private Connector _connector = null;
 
 	    public void ConnectServer()
 	    {
@@ -21,7 +21,7 @@ namespace Client
 			mainWindow.StateBlock.Foreground = Brushes.Orange;
 
 			var endPoint = new IPEndPoint(Configuration.PrivateIP, Configuration.Port);
-			Connector.Connect(endPoint, () => { return SessionManager.Instance.Generate(); });
+			_connector.Connect(endPoint, () => { return SessionManager.Instance.Generate(); });
 	    }
 
 		public void StartupApp(object sender, StartupEventArgs eventeArgs)
@@ -33,7 +33,7 @@ namespace Client
 				return;
 			}
 			
-			Connector = new Connector();
+			_connector = new Connector();
 
 			ConnectServer();
 	    }

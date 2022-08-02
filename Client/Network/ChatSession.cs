@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Windows;
 using System.Windows.Media;
@@ -9,8 +10,16 @@ namespace Client.Network
     public class ChatSession : PacketSession
     {
         public static ChatSession Instance { get; private set; }
-        public string _NickName;
-        public long _UID; // 추후 사용 
+
+        private string _nickName;
+
+        private long _uid;
+
+        // key : server id, value : server name
+        private Dictionary<long, string> _joinedServerList;
+
+        private long _currentServer;
+        
         // accountType은 추후에 추가
 
         public ChatSession()
@@ -56,7 +65,29 @@ namespace Client.Network
 		        mainWindow.StateBlock.Text = "서버와 접속이 끊어졌습니다.";
 		        mainWindow.StateBlock.Foreground = Brushes.Red;
 
+		        App app = Application.Current as App;
+		        app.ConnectServer();
 	        });
+        }
+
+        internal void SetUID(long uid)
+        {
+	        _uid = uid;
+        }
+
+        internal void SetNickname(string nickname)
+        {
+	        _nickName = nickname;
+        }
+
+        internal long GetUID()
+        {
+	        return _uid;
+        }
+
+        internal string GetNickname()
+        {
+	        return _nickName;
         }
     }
 }

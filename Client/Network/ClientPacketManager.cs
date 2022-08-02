@@ -28,6 +28,8 @@ class PacketManager
 
 	public void Register()
 	{
+		_onRecv.Add((ushort)PacketID.S_HeartBeatRespond, MakePacket<S_HeartBeatRespond>);
+		_handler.Add((ushort)PacketID.S_HeartBeatRespond, ChatHandler.S_HeartBeatRespondHandler);
 		_onRecv.Add((ushort)PacketID.S_SuccessSignIn, MakePacket<S_SuccessSignIn>);
 		_handler.Add((ushort)PacketID.S_SuccessSignIn, ChatHandler.S_SuccessSignInHandler);
 		_onRecv.Add((ushort)PacketID.S_FailSignIn, MakePacket<S_FailSignIn>);
@@ -40,26 +42,32 @@ class PacketManager
 		_handler.Add((ushort)PacketID.S_SuccessSignOut, ChatHandler.S_SuccessSignOutHandler);
 		_onRecv.Add((ushort)PacketID.S_FailSignOut, MakePacket<S_FailSignOut>);
 		_handler.Add((ushort)PacketID.S_FailSignOut, ChatHandler.S_FailSignOutHandler);
-		_onRecv.Add((ushort)PacketID.S_UserSignIn, MakePacket<S_UserSignIn>);
-		_handler.Add((ushort)PacketID.S_UserSignIn, ChatHandler.S_UserSignInHandler);
-		_onRecv.Add((ushort)PacketID.S_UserSignOut, MakePacket<S_UserSignOut>);
-		_handler.Add((ushort)PacketID.S_UserSignOut, ChatHandler.S_UserSignOutHandler);
 		_onRecv.Add((ushort)PacketID.S_SuccessCommand, MakePacket<S_SuccessCommand>);
 		_handler.Add((ushort)PacketID.S_SuccessCommand, ChatHandler.S_SuccessCommandHandler);
 		_onRecv.Add((ushort)PacketID.S_FailCommand, MakePacket<S_FailCommand>);
 		_handler.Add((ushort)PacketID.S_FailCommand, ChatHandler.S_FailCommandHandler);
 		_onRecv.Add((ushort)PacketID.S_SendChat, MakePacket<S_SendChat>);
 		_handler.Add((ushort)PacketID.S_SendChat, ChatHandler.S_SendChatHandler);
-		_onRecv.Add((ushort)PacketID.S_ExitServer, MakePacket<S_ExitServer>);
-		_handler.Add((ushort)PacketID.S_ExitServer, ChatHandler.S_ExitServerHandler);
-		_onRecv.Add((ushort)PacketID.S_JoinServer, MakePacket<S_JoinServer>);
-		_handler.Add((ushort)PacketID.S_JoinServer, ChatHandler.S_JoinServerHandler);
+		_onRecv.Add((ushort)PacketID.S_EnterServerSuccess, MakePacket<S_EnterServerSuccess>);
+		_handler.Add((ushort)PacketID.S_EnterServerSuccess, ChatHandler.S_EnterServerSuccessHandler);
+		_onRecv.Add((ushort)PacketID.S_SuccessFindServer, MakePacket<S_SuccessFindServer>);
+		_handler.Add((ushort)PacketID.S_SuccessFindServer, ChatHandler.S_SuccessFindServerHandler);
+		_onRecv.Add((ushort)PacketID.S_FailFindServer, MakePacket<S_FailFindServer>);
+		_handler.Add((ushort)PacketID.S_FailFindServer, ChatHandler.S_FailFindServerHandler);
 		_onRecv.Add((ushort)PacketID.S_SuccessCreateServer, MakePacket<S_SuccessCreateServer>);
 		_handler.Add((ushort)PacketID.S_SuccessCreateServer, ChatHandler.S_SuccessCreateServerHandler);
 		_onRecv.Add((ushort)PacketID.S_FailCreateServer, MakePacket<S_FailCreateServer>);
 		_handler.Add((ushort)PacketID.S_FailCreateServer, ChatHandler.S_FailCreateServerHandler);
-		_onRecv.Add((ushort)PacketID.S_CurrentUserList, MakePacket<S_CurrentUserList>);
-		_handler.Add((ushort)PacketID.S_CurrentUserList, ChatHandler.S_CurrentUserListHandler);
+		_onRecv.Add((ushort)PacketID.S_SendUserList, MakePacket<S_SendUserList>);
+		_handler.Add((ushort)PacketID.S_SendUserList, ChatHandler.S_SendUserListHandler);
+		_onRecv.Add((ushort)PacketID.S_SendServerList, MakePacket<S_SendServerList>);
+		_handler.Add((ushort)PacketID.S_SendServerList, ChatHandler.S_SendServerListHandler);
+		_onRecv.Add((ushort)PacketID.S_Announce, MakePacket<S_Announce>);
+		_handler.Add((ushort)PacketID.S_Announce, ChatHandler.S_AnnounceHandler);
+		_onRecv.Add((ushort)PacketID.S_RemoveServerAtList, MakePacket<S_RemoveServerAtList>);
+		_handler.Add((ushort)PacketID.S_RemoveServerAtList, ChatHandler.S_RemoveServerAtListHandler);
+		_onRecv.Add((ushort)PacketID.S_RemoveUserAtList, MakePacket<S_RemoveUserAtList>);
+		_handler.Add((ushort)PacketID.S_RemoveUserAtList, ChatHandler.S_RemoveUserAtListHandler);
 
 	}
 
@@ -85,8 +93,6 @@ class PacketManager
 		//// 클라에서 보낸 패킷 타입에 맞게 받아서
 		//// 역직렬화 시킨 후에 패킷 타입에 맞는 함수를 콜백함.
 		//// 애초에 콜백을 하려면 여기에서 패킷을 역직렬화 할 수 밖에 없음.
-		// T는 MakePacket 메서드가 _onRecv(딕셔너리)의 값으로 지정되어있는 타입이므로(MakePacket<~~>)
-		// 그 타입(~~부분)에 맞는 형으로 할당함.
 		T pkt = new T();
 		pkt.Read(buffer);
 		Action<PacketSession, IPacket> action = null;
