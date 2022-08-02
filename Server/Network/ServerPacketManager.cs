@@ -1,5 +1,7 @@
 using Core;
+using System;
 using Server.Network;
+using System.Collections.Generic;
 
 class PacketManager
 {
@@ -26,6 +28,8 @@ class PacketManager
 
 	public void Register()
 	{
+		_onRecv.Add((ushort)PacketID.C_HeartBeatRequest, MakePacket<C_HeartBeatRequest>);
+		_handler.Add((ushort)PacketID.C_HeartBeatRequest, ChatHandler.C_HeartBeatRequestHandler);
 		_onRecv.Add((ushort)PacketID.C_SendChat, MakePacket<C_SendChat>);
 		_handler.Add((ushort)PacketID.C_SendChat, ChatHandler.C_SendChatHandler);
 		_onRecv.Add((ushort)PacketID.C_RequestSignIn, MakePacket<C_RequestSignIn>);
@@ -34,18 +38,22 @@ class PacketManager
 		_handler.Add((ushort)PacketID.C_RequestSignUp, ChatHandler.C_RequestSignUpHandler);
 		_onRecv.Add((ushort)PacketID.C_RequestSignOut, MakePacket<C_RequestSignOut>);
 		_handler.Add((ushort)PacketID.C_RequestSignOut, ChatHandler.C_RequestSignOutHandler);
-		_onRecv.Add((ushort)PacketID.C_RequestEnterServer, MakePacket<C_RequestEnterServer>);
-		_handler.Add((ushort)PacketID.C_RequestEnterServer, ChatHandler.C_RequestEnterServerHandler);
-		_onRecv.Add((ushort)PacketID.C_RequestLeaveServer, MakePacket<C_RequestLeaveServer>);
-		_handler.Add((ushort)PacketID.C_RequestLeaveServer, ChatHandler.C_RequestLeaveServerHandler);
-		_onRecv.Add((ushort)PacketID.C_RequestCreateServer, MakePacket<C_RequestCreateServer>);
-		_handler.Add((ushort)PacketID.C_RequestCreateServer, ChatHandler.C_RequestCreateServerHandler);
-		_onRecv.Add((ushort)PacketID.C_RequestDeleteServer, MakePacket<C_RequestDeleteServer>);
-		_handler.Add((ushort)PacketID.C_RequestDeleteServer, ChatHandler.C_RequestDeleteServerHandler);
-		_onRecv.Add((ushort)PacketID.C_RequestJoinServer, MakePacket<C_RequestJoinServer>);
-		_handler.Add((ushort)PacketID.C_RequestJoinServer, ChatHandler.C_RequestJoinServerHandler);
+		_onRecv.Add((ushort)PacketID.C_EnterServer, MakePacket<C_EnterServer>);
+		_handler.Add((ushort)PacketID.C_EnterServer, ChatHandler.C_EnterServerHandler);
+		_onRecv.Add((ushort)PacketID.C_FindServer, MakePacket<C_FindServer>);
+		_handler.Add((ushort)PacketID.C_FindServer, ChatHandler.C_FindServerHandler);
+		_onRecv.Add((ushort)PacketID.C_JoinServer, MakePacket<C_JoinServer>);
+		_handler.Add((ushort)PacketID.C_JoinServer, ChatHandler.C_JoinServerHandler);
+		_onRecv.Add((ushort)PacketID.C_LeaveServer, MakePacket<C_LeaveServer>);
+		_handler.Add((ushort)PacketID.C_LeaveServer, ChatHandler.C_LeaveServerHandler);
+		_onRecv.Add((ushort)PacketID.C_CreateServer, MakePacket<C_CreateServer>);
+		_handler.Add((ushort)PacketID.C_CreateServer, ChatHandler.C_CreateServerHandler);
+		_onRecv.Add((ushort)PacketID.C_DeleteServer, MakePacket<C_DeleteServer>);
+		_handler.Add((ushort)PacketID.C_DeleteServer, ChatHandler.C_DeleteServerHandler);
 		_onRecv.Add((ushort)PacketID.C_RequestCommand, MakePacket<C_RequestCommand>);
 		_handler.Add((ushort)PacketID.C_RequestCommand, ChatHandler.C_RequestCommandHandler);
+		_onRecv.Add((ushort)PacketID.C_RequestUserList, MakePacket<C_RequestUserList>);
+		_handler.Add((ushort)PacketID.C_RequestUserList, ChatHandler.C_RequestUserListHandler);
 		_onRecv.Add((ushort)PacketID.C_RequestServerList, MakePacket<C_RequestServerList>);
 		_handler.Add((ushort)PacketID.C_RequestServerList, ChatHandler.C_RequestServerListHandler);
 

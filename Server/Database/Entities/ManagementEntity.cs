@@ -8,7 +8,7 @@ public sealed record ManagementEntity : IMongoEntity
 	[BsonId]
 	public ObjectId entityId { get; set; }
 
-	public long UID;
+	public long ID;
 
 	public string managerName;
 }

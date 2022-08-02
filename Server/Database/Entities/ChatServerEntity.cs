@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using AccountType;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace Server.Database.Entities
@@ -10,9 +11,10 @@ namespace Server.Database.Entities
 
 	    public long serverID { get; init; }
 
-	    public string serverName { get; init; }
+	    public long ownerID { get; init; }
 
-	    public List<long> userList { get; init; }
+		public string serverName { get; init; }
 
+	    public List<long> jointedUserList { get; init; }
     }
 }

@@ -3,13 +3,13 @@
 
 public static class Configuration
 {
-	private static string Path = "config.txt";
+	private static string s_path = "config.txt";
 	public static string PublicIP = "not init";
 	public static string PrivateIP = "not init";
 	public static int Port;
 	public static bool Load()
 	{
-		StreamReader config = File.OpenText(Path);
+		StreamReader config = File.OpenText(s_path);
 		if (config == null)
 		{
 			// log - cannot open file

@@ -1,4 +1,10 @@
-﻿using Core;
+﻿using System.Security.Cryptography.X509Certificates;
+using AccountType;
+using Core;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using Server.Database;
+using Server.Database.Entities;
 using Server.Network;
 
 namespace Server;
@@ -8,23 +14,54 @@ namespace Server;
 // 채팅방을 관리하도록 할 수 있다.
 public class Server : IJobQueue
 {
-    private readonly List<ChatSession> _sessionList = new List<ChatSession>();
     private string _chatServerName;
     private long _serverID;
-    JobQueue _jobQueue = new JobQueue();
+    private long _owner;
+    private List<long> _userList;
+
+    JobQueue _jobQueue;
     // jobQueue를 사용하여 직접 호출이 아니라 델리게이트를 push하는 방식으로 변경. 즉, 함수 호출이라는 액션.
     // 주문서와 비슷한 역할을 한다.
     // JobQueue에서 스레드 세이프하게(lock) 동작하므로 Server에서는 lock이 필요 없다.
     // JobQueue의 경우, 프로젝트마다 위치가 조금 달라질 수 있는데, 오픈되어있는 맵이 아닌 로딩하여 다음 맵으로 넘어가는 방식의 경우에는 
     // 현재 방식처럼( 채팅방하나) job queue를 각자 가지고 있는 방식.
     // 그렇지 않고 mmo나 오픈월드(심리스) 같은 경우는 모든 개체가 잡큐를 가지고 있기도 한다고 함.(무기, 스킬, 유저, 등등)
-    List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
+    List<ArraySegment<byte>> _pendingList;
 
-    private List<long> _userList = new List<long>();
 
-    public Server(string serverName)
+    public Server(string serverName, long ownerID)
     {
+	    _jobQueue = new JobQueue();
+	    _pendingList = new List<ArraySegment<byte>>();
+
         _chatServerName = serverName;
+        _owner = ownerID;
+        _serverID = DatabaseManager.Instance.GenerateServerID();
+        _userList = new List<long>();
+        _userList.Add(_owner);
+
+        var chatServerDB = DatabaseManager.Instance.GetCollection<ChatServerEntity>(DatabaseManager.ChatServerCollection);
+        ChatServerEntity newServer = new ChatServerEntity()
+        {
+	        entityId = ObjectId.GenerateNewId(),
+	        serverID = _serverID,
+            ownerID = _owner,
+	        serverName = _chatServerName,
+            jointedUserList = _userList
+        };
+        
+        chatServerDB.InsertOne(newServer);
+    }
+
+    public Server(ChatServerEntity entityFromDB)
+    {
+	    _jobQueue = new JobQueue();
+	    _pendingList = new List<ArraySegment<byte>>();
+
+	    _chatServerName = entityFromDB.serverName;
+	    _owner = entityFromDB.ownerID;
+	    _serverID = entityFromDB.serverID;
+	    _userList = entityFromDB.jointedUserList;
     }
 
     // 패킷 모아보내기
@@ -61,9 +98,13 @@ public class Server : IJobQueue
 
     public void Flush()
     {
-        foreach (ChatSession s in _sessionList)
+        foreach (var user in _userList)
         {
-            s.Send(_pendingList);
+	        ChatSession session = SessionManager.Instance.FindOrNull(user);
+	        if (session != null)
+	        {
+		        session.Send(_pendingList);
+	        }
         }
         //if(_pendingList.Count > 0)
         //{
@@ -73,28 +114,27 @@ public class Server : IJobQueue
         _pendingList.Clear();
     }
 
-    public void Enter(ChatSession session)
+    public void Enter(long uid)
     {
-
-	    _sessionList.Add(session);
-        session.chatServer = this;
+        _userList.Add(uid);
+	    //_sessionList.Add(session);
+     //   session.ChatServer = this;
     }
 
-    public void Leave(ChatSession session)
+    public void Leave(long uid)
     {
-	    _sessionList.Remove(session);
+	    _userList.Remove(uid);
     }
 
-    public ChatSession Find(long id)
+    // 굳이 필요 없을 듯.
+    public ChatSession FindOrNull(long uid)
     {
-	    foreach (var session in _sessionList)
+	    ChatSession session = null;
+	    foreach (var user in _userList)
 	    {
-		    if (session.GetUID() == id)
-		    {
-			    return session;
-		    }
+		    session = SessionManager.Instance.FindOrNull(user);
 	    }
-	    return null;
+        return session;
     }
 
     public string GetServerName()
@@ -112,20 +152,12 @@ public class Server : IJobQueue
 	    return _serverID;
     }
 
-    public void SetServerID(long serverID)
+    public List<string> GetNicknameList()
     {
-        _serverID = serverID;
-    }
-
-    public List<S_CurrentUserList.UserList> GetNicknameList()
-    {
-        List<S_CurrentUserList.UserList> nicknameList = new List<S_CurrentUserList.UserList>();
-	    foreach (var user in _sessionList)
+        List<string> nicknameList = new List<string>();
+	    foreach (var user in _userList)
 	    {
-		    S_CurrentUserList.UserList nickname = new S_CurrentUserList.UserList();
-		    nickname.Nickname = user.GetNickname();
-
-		    nicknameList.Add(nickname);
+		    nicknameList.Add(SessionManager.Instance.FindOrNull(user).GetNickname());
 	    }
         return nicknameList;
     }

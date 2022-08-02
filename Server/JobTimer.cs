@@ -5,11 +5,11 @@ namespace Server
 {
     struct JobTimerElem : IComparable<JobTimerElem>
     {
-        public int execTick;    // 얼마 후 실행할 것인가.
-        public Action action;   // 어떤 것을 실행할 것인가.
+        public int ExecTick;    // 얼마 후 실행할 것인가.
+        public Action Action;   // 어떤 것을 실행할 것인가.
         public int CompareTo([AllowNull] JobTimerElem other)
         {
-            return execTick - other.execTick;
+            return ExecTick - other.ExecTick;
         }
     }
     public class JobTimer
@@ -22,8 +22,8 @@ namespace Server
         public void Push(Action action, int tickAfter = 0)
         {
             JobTimerElem job;
-            job.action = action;
-            job.execTick = System.Environment.TickCount + tickAfter;
+            job.Action = action;
+            job.ExecTick = System.Environment.TickCount + tickAfter;
 
             lock(_lock)
             {
@@ -49,7 +49,7 @@ namespace Server
 
                     job = _priorityQueue.Peek();
                     // 실행 타이밍인지 체크
-                    if(job.execTick > now)
+                    if(job.ExecTick > now)
                     {
                         break;
                     }
@@ -58,7 +58,7 @@ namespace Server
                     // 큐에서 제거하고 아래에서 지정한 액션 델리게이트를 호출.
                     _priorityQueue.Pop();
                 }
-                job.action.Invoke();
+                job.Action.Invoke();
             }
         }
     }
